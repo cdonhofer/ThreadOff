@@ -1,0 +1,36 @@
+.chatbox{
+
+    -fx-background-color:#ffffff;
+    -fx-min-height:100%;
+    -fx-min-width:100%;
+}
+
+.label {
+    -fx-text-fill:black;
+    -fx-alignment: baseline-center;
+    -fx-min-height: 25;
+}
+.text {
+    -fx-text-fill:black;
+}
+
+.odd-row {
+    -fx-background-color: red;
+}
+
+.input-panel {
+    -fx-border-insets: 15;
+    -fx-padding: 12;
+    -fx-spacing: 12;
+}
+
+#add{
+
+    -fx-background-color:purple;
+    -fx-text-fill:white;
+    -fx-pref-height:25px;
+    -fx-pref-width:50px;
+    -fx-translate-x:75;
+    -fx-translate-y:20;
+
+}

@@ -1,0 +1,176 @@
+.root {
+    -fx-font-family: "Arial";
+    -fx-background-color: #f4f4f4;
+}
+
+.title-bar {
+    -fx-background-color: #4C566A;
+    -fx-padding: 10px;
+    -fx-alignment: center;
+}
+
+.title-label {
+    -fx-text-fill: black;
+    -fx-font-size: 20px; /* Adjust the font size to be more visible */
+}
+
+#mainArea, #mainArea > * {
+    -fx-pref-width: 100%;
+    -fx-max-width: Infinity;
+}
+
+.padding {
+    -fx-padding: 5px;
+}
+#sidebar {
+    -fx-spacing: 10px;
+}
+
+#sidebar, #sidebar > * {
+    -fx-pref-width: 100%;
+}
+
+.sidebar-box {
+    -fx-background-color: #FFE0B2;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(one-pass-box, rgba(0, 0, 0, 0.2), 1, 0, 1, 1);
+}
+
+.inputField, .comboBox, .label {
+    -fx-padding: 5px;
+    -fx-border-color: #FFB74D;
+    -fx-background-color: #FFF3E0;
+    -fx-alignment: baseline-left;
+    -fx-pref-height: 25px;
+    -fx-max-width: Infinity;
+}
+
+.stats-box Label, .label {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-pref-height: 25px;
+}
+.stats-box .stats-box-header {
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: #FFB74D;
+}
+
+
+
+.horizontal-bar, .input-panel {
+    -fx-spacing: 10px;
+    -fx-padding: 5px;
+}
+
+.button {
+    -fx-background-color: #FFA726;
+    -fx-text-fill: #ECEFF4;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+}
+
+.button:hover {
+    -fx-background-color: #FF8A65;
+}
+
+#canvasArea {
+    -fx-background-color: #ffffff;
+    -fx-max-width: Infinity;
+    -fx-max-height: Infinity;
+}
+
+.progress-bar {
+    -fx-background-color: #D8DEE9;
+    -fx-accent: #FF7043;
+}
+
+.comboBox .context-menu {
+    -fx-background-color: #FFE0B2;
+}
+
+.comboBox .menu-item {
+    -fx-background-color: #FFE0B2;
+}
+
+.comboBox .menu-item:hover {
+    -fx-background-color: #FFCCBC;
+}
+
+.button.start-button {
+    -fx-background-color: linear-gradient(to bottom right, #2ecc71, #27ae60);
+    -fx-text-fill: #FFFFFF;
+    -fx-cursor: hand;
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 10px;
+    -fx-border-color: #27ae60; /* Adding Border */
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px; /* Smooth border edges */
+}
+
+.button.start-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #27ae60, #2ecc71);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 3, 3); /* Shadow effect on hover */
+}
+
+.button.start-button .icon {
+    -fx-shape: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z";
+    -fx-background-color: #FFFFFF;
+    -fx-scale-shape: false;
+    -fx-padding: 5 5 5 10;
+}
+
+.button.stop-button {
+    -fx-background-color: linear-gradient(to bottom right, #e74c3c, #c0392b);
+    -fx-text-fill: #FFFFFF;
+    -fx-cursor: hand;
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 10px;
+    -fx-border-color: #c0392b; /* Adding Border */
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px; /* Smooth border edges */
+}
+
+.button.stop-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #c0392b, #e74c3c);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 3, 3); /* Shadow effect on hover */
+}
+
+.button.stop-button .icon {
+    -fx-shape: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-4-12h8v8h-8z";
+    -fx-background-color: #FFFFFF;
+    -fx-scale-shape: false;
+    -fx-padding: 5 5 5 10;
+}
+
+.icon-platform-thread {
+    -fx-shape: "M0 0 L20 0 L20 20 L0 20 Z M25 0 L45 0 L45 20 L25 20 Z M0 25 L20 25 L20 45 L0 45 Z M25 25 L45 25 L45 45 L25 45 Z";
+    -fx-background-color: #e74c3c; /* The color is now the same as the four squares in the virtual thread icon */
+    -fx-scale-shape: false;
+    -fx-padding: 5;
+    -fx-min-width: 15px;
+    -fx-min-height: 15px;
+}
+
+.icon-virtual-thread {
+    -fx-background-image: url('layers.png');
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: contain;
+    -fx-background-position: center;
+    -fx-min-width: 25px;
+    -fx-min-height: 25px;
+}
+
+.stats-box-vThreads {
+    -fx-graphic: url('vthread-icon.png');
+    -fx-padding: 5, 5, 5, 18;
+}
+.stats-box-pThreads {
+     -fx-graphic: url('pthread-icon.png');
+     -fx-padding: 5, 5, 5, 18;
+ }
+
+
+
