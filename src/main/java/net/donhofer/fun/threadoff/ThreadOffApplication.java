@@ -1,12 +1,12 @@
 package net.donhofer.fun.threadoff;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -14,12 +14,15 @@ import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import net.donhofer.fun.threadoff.calc.*;
-import net.donhofer.fun.threadoff.ui.ColoredLine;
+import net.donhofer.fun.threadoff.ui.CanvasUpdateTimer;
 import net.donhofer.fun.threadoff.ui.StatsBox;
+import net.donhofer.fun.threadoff.ui.TaskUiElements;
+import net.donhofer.fun.threadoff.ui.UiUpdateTimer;
 
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 
 public class ThreadOffApplication extends Application {
@@ -35,9 +38,8 @@ public class ThreadOffApplication extends Application {
     ExecutorService executorService;
     CompletionService<List<Shape>> completionService;
     long startTime;
-    long endTime;
-    Future<Void> statsTask;
-    Future<Void> canvasUpdateTask;
+    AtomicLong elapsedTime = new AtomicLong(0);
+    Future<Void> resultsCollector;
 
     private final double canvasStartingWidth = 400, canvasStartingHeight = 400;
     Canvas drawableCanvas = new Canvas(canvasStartingWidth, canvasStartingHeight);
@@ -46,6 +48,7 @@ public class ThreadOffApplication extends Application {
 
     private final int defaultExecutions = 1000;
     private final TextField numCalculationsInput = new TextField();
+    private final Label noCalculationDisplay = new Label("n/A");
     UnaryOperator<TextFormatter.Change> integerFilter = change -> {
         String newText = change.getControlNewText();
         if (newText.matches("([1-9][0-9]*)?")) {
@@ -54,12 +57,18 @@ public class ThreadOffApplication extends Application {
         return null;
     };
 
-    // todo find non-raw solution
     List<SelectableTask> selectableTasks = List.of(
-            new SelectableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)", (var numExec) -> new BlockingTask(completionService, numExec)),
-            new SelectableTask("Calculate primes to 10.000", "Calculates primes up to 10.000", (var numExec) -> new PrimesCalc(completionService, numExec)),
-            new SelectableTask("Koch", "Calculates and displays a Koch-flake", (var numExec) -> new KochFlakeTask(completionService, numExec, drawableCanvas, strokeColor, backgroundColor))
+            new SelectableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
+                    (var numExec) -> new BlockingTask(completionService, numExec),
+                    true),
+            new SelectableTask("Calculate primes to 10.000", "Calculates primes up to 10.000",
+                    (var numExec) -> new PrimesCalc(completionService, numExec),
+                    true),
+            new SelectableTask("Koch Flake", "Calculates a Koch-flake of grade 8, which is then displayed",
+                    (var numExec) -> new KochFlakeTask(completionService, drawableCanvas, strokeColor, backgroundColor),
+                    false)
     );
+
     ObservableList<SelectableTask> options =
             FXCollections.observableArrayList(selectableTasks);
     final ComboBox<SelectableTask> taskSelection = new ComboBox<>(options);
@@ -67,6 +76,7 @@ public class ThreadOffApplication extends Application {
     final ComboBox<String> threadTypeSelection = new ComboBox<>(FXCollections.observableArrayList("vThreads", "pThreads"));
 
 
+    AtomicInteger successfulTasks = new AtomicInteger(0);
     ConcurrentLinkedQueue<Shape> shapes = new ConcurrentLinkedQueue<>();
 
     @Override
@@ -150,22 +160,35 @@ public class ThreadOffApplication extends Application {
         stop.getStyleClass().add("stop-button");
 
         // assign actions to the buttons
-        start.setOnAction(startClickEvent -> {
-            runTask();
-        });
-        stop.setOnAction(endClickEvent -> {
-            stopCalculations();
-        });
+        start.setOnAction(startClickEvent -> runTask());
+        stop.setOnAction(endClickEvent -> stopCalculations());
 
         numCalculationsInput.setTextFormatter(
                 new TextFormatter<>(new IntegerStringConverter(), defaultExecutions, integerFilter));
+        noCalculationDisplay.setVisible(false);
+        noCalculationDisplay.setManaged(false);
+
         taskSelection.setValue(selectableTasks.get(0));
+
+        // make calculations input editable only for appropriate tasks
+        taskSelection.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                            numCalculationsInput.setEditable(newValue.allowNumExecutions());
+                            numCalculationsInput.setVisible(newValue.allowNumExecutions());
+                            numCalculationsInput.setManaged(newValue.allowNumExecutions());
+                            noCalculationDisplay.setVisible(!newValue.allowNumExecutions());
+                            noCalculationDisplay.setManaged(!newValue.allowNumExecutions());
+                        }
+                );
+
         threadTypeSelection.setValue(threadTypeSelection.getItems().get(0));
 
         inputFieldsRow.getChildren().addAll(
                 new Label("Task:"),
                 taskSelection,
                 new Label("# calculations:"),
+                noCalculationDisplay,
                 numCalculationsInput,
                 new Label("Thread type:"),
                 threadTypeSelection
@@ -176,13 +199,9 @@ public class ThreadOffApplication extends Application {
 
     private void stopCalculations() {
         System.out.println("in stopCalculations!-------------------------");
-        if (statsTask != null) {
+        if (resultsCollector != null) {
             System.out.println("cancelling stats task");
-            statsTask.cancel(true);
-        }
-        if (canvasUpdateTask != null) {
-            System.out.println("cancelling canvasUpdateTask");
-            canvasUpdateTask.cancel(true);
+            resultsCollector.cancel(true);
         }
         if(executorService != null && !executorService.isShutdown()) {
             System.out.println("shutting down service");
@@ -196,7 +215,7 @@ public class ThreadOffApplication extends Application {
                 throw new RuntimeException(e);
             }
         }
-        endTime = System.nanoTime();
+        elapsedTime.set(System.nanoTime());
     }
 
     private void runTask() {
@@ -209,7 +228,8 @@ public class ThreadOffApplication extends Application {
         stopCalculations();
 
         // prepare main canvas
-        final ProgressBar progressBar = prepareUIForTaskRun(selectedTask);
+        final TaskUiElements uiElements = prepareUIForTaskRun(selectedTask, useVThreads);
+
 
         if (executorService == null || executorService.isShutdown()) {
             executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -219,6 +239,9 @@ public class ThreadOffApplication extends Application {
         // init buffer for shapes to draw (used by graphical tasks)
         shapes.clear();
 
+        // update task state data
+        successfulTasks.setRelease(0);
+        elapsedTime.setRelease(0);
         startTime = System.nanoTime();
 
         // get data required for running the tasks: initial tasks(s) and number of expected total tasks
@@ -226,19 +249,21 @@ public class ThreadOffApplication extends Application {
         InitialData initialData;
 
         initialData = taskRunnable.getTasks();
-        // submit task for updating the stats and canvas
-        statsTask = executorService.submit(() -> showStats(completionService, progressBar, initialData.expectedTasks(), selectedTask, useVThreads));
-        // canvas update task
-        canvasUpdateTask = executorService.submit(() -> updateCanvas());
-
-
+        // submit task for collecting the finished tasks' data
+        resultsCollector = executorService.submit(() -> collectFinishedTasks(completionService, initialData.expectedTasks()));
         // add initial tasks
-        for (var task : initialData.initialTasks()) {
+        for (Callable<List<Shape>> task : initialData.initialTasks()) {
             completionService.submit(task);
         }
+
+        // start animation timers to update the UI
+        AnimationTimer uiUpdater = new UiUpdateTimer(uiElements, initialData.expectedTasks(), successfulTasks, elapsedTime);
+        uiUpdater.start();
+        AnimationTimer canvasUpdater = new CanvasUpdateTimer(drawableCanvas, initialData.expectedTasks(), shapes, successfulTasks);
+        canvasUpdater.start();
     }
 
-    private ProgressBar prepareUIForTaskRun(SelectableTask task) {
+    private TaskUiElements prepareUIForTaskRun(SelectableTask task, boolean useVThreads) {
         mainCanvas.getChildren().clear();
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress(0F);
@@ -249,33 +274,24 @@ public class ThreadOffApplication extends Application {
         mainCanvas.getChildren().add(progressBar);
 
         // canvas for visual tasks to draw on
-        // todo determine available space
         drawableCanvas = new Canvas(mainCanvas.getWidth() * 0.8, mainCanvas.getHeight() * 0.8);
         drawableCanvas.getGraphicsContext2D().setStroke(strokeColor);
         drawableCanvas.getGraphicsContext2D().setFill(backgroundColor);
-//        drawableCanvas.widthProperty().bind(mainCanvas.widthProperty());
-//        drawableCanvas.heightProperty().bind(mainCanvas.heightProperty());
         mainCanvas.getChildren().add(drawableCanvas);
 
         //add new section on top of stats canvas
         final VBox newStatsBox = new VBox();
         newStatsBox.getStyleClass().add("sidebar-box");
         statsSideBar.getChildren().add(0, newStatsBox);
-        return progressBar;
-    }
-
-
-    private Void showStats(CompletionService<List<Shape>> completionService, ProgressBar progressBar, int numTasks, SelectableTask task, boolean useVThreads) {
-        AtomicInteger successful = new AtomicInteger(0);
 
         VBox statsContainer = (VBox) statsSideBar.getChildren().get(0);
         StatsBox statsBox = new StatsBox(useVThreads, task.name());
-        long lastUpdate = System.nanoTime();
         Platform.runLater(() -> statsContainer.getChildren().add(statsBox));
 
-        // create a buffer canvas for large numbers of updates
-        Canvas bufferCanvas = new Canvas(drawableCanvas.getWidth(), drawableCanvas.getHeight());
-        bufferCanvas.getStyleClass().addAll(drawableCanvas.getStyleClass());
+        return new TaskUiElements(progressBar, statsBox);
+    }
+
+    private Void collectFinishedTasks(CompletionService<List<Shape>> completionService, int numTasks) {
 
         while(!Thread.currentThread().isInterrupted()) {
             // prefer non-blocking poll for responsiveness(to interruption)
@@ -283,64 +299,25 @@ public class ThreadOffApplication extends Application {
             if (completedTask == null) {
                 continue;
             }
-            int doneTasks = successful.addAndGet(!completedTask.isCancelled() ? 1 : 0);
-            System.out.println("Completed: " + doneTasks);
+            int numDone = successfulTasks.addAndGet(!completedTask.isCancelled() ? 1 : 0);
 
-            // calculate progress
-            float progress = (float) doneTasks / numTasks;
             try {
                 shapes.addAll(completedTask.get());
             } catch (Exception e) {
+                // TODO react accordingly
                 throw new RuntimeException(e);
             }
 
-            // limit updates to every ten ms for smooth updates
-            long currentTime = System.nanoTime();
-            long elapsedMs = (long) ((currentTime-lastUpdate) / 1e6);
-            if (elapsedMs < 50 && doneTasks < numTasks)
-                continue;
-            lastUpdate = currentTime;
-
             long currTime = System.nanoTime();
             long durationNano = currTime - startTime;
-            double durationSeconds = durationNano / 1e9;
+            elapsedTime.set(durationNano);
 
-            Platform.runLater(() -> {
-                // update stats sidebar
-                statsBox.setSuccessful(doneTasks);
-                statsBox.setDurationSeconds(durationSeconds);
-                // update main pane
-                progressBar.setProgress(progress);
-            });
-
+            // stop thread eventually
+            if (numDone >= numTasks) {
+                System.out.println("done calculating! rest is UI updates ...");
+                break;
+            }
         }
-        return null;
-    }
-
-
-    private Void updateCanvas() {
-
-        final int updateBound = 200;
-
-        long lastUpdate = System.nanoTime();
-
-        while(!Thread.currentThread().isInterrupted()) {
-            // draw in batches of updateBound lines and after at least updateBound ms
-            long currentTime = System.nanoTime();
-            long elapsedMs = (long) ((currentTime-lastUpdate) / 1e6);
-            if (elapsedMs < updateBound || shapes.size() < updateBound)
-                continue;
-            Platform.runLater(() -> {
-                GraphicsContext gc = drawableCanvas.getGraphicsContext2D();
-                for (int i = 0; i < updateBound; i++) {
-                    Shape s = shapes.poll();
-                    if (s instanceof ColoredLine line) {
-                        gc.strokeLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
-                    }
-                }
-            });
-        }
-
         return null;
     }
 
@@ -352,5 +329,6 @@ public class ThreadOffApplication extends Application {
     public void stop() {
         stopCalculations();
     }
+
 
 }

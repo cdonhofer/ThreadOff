@@ -15,15 +15,15 @@ public final class KochFlakeTask extends ThreadOffCalc {
     private Canvas canvas;
     private Color strokeColor, bgColor;
 
-    public KochFlakeTask(CompletionService<List<Shape>> completionService, int multiplicity) {
-        // todo multiplicity
-        super(completionService, 9);
+    public KochFlakeTask(CompletionService<List<Shape>> completionService) {
+        // fixed multiplicity for this task
+        super(completionService, 8);
     }
 
 
-    public KochFlakeTask(CompletionService<List<Shape>> completionService, int multiplicity,
+    public KochFlakeTask(CompletionService<List<Shape>> completionService,
                          Canvas canvas, Color strokeColor, Color bgColor) {
-        this(completionService, multiplicity);
+        this(completionService);
         this.canvas = canvas;
         this.strokeColor = strokeColor;
         this.bgColor = bgColor;
