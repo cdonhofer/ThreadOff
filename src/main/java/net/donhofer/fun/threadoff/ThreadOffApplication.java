@@ -3,6 +3,7 @@ package net.donhofer.fun.threadoff;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -19,6 +20,7 @@ import net.donhofer.fun.threadoff.ui.StatsBox;
 import net.donhofer.fun.threadoff.ui.TaskUiElements;
 import net.donhofer.fun.threadoff.ui.UiUpdateTimer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +39,7 @@ public class ThreadOffApplication extends Application {
     private VBox statsSideBar;
     ExecutorService executorService;
     CompletionService<List<Shape>> completionService;
+    private final List<AnimationTimer> runningAnimations = new ArrayList<>();
     long startTime;
     AtomicLong elapsedTime = new AtomicLong(0);
     Future<Void> resultsCollector;
@@ -67,9 +70,21 @@ public class ThreadOffApplication extends Application {
             new SelectableTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskSmall(completionService, drawableCanvas, strokeColor),
                     false),
-            new SelectableTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every two curves' calculation is a separate task.",
-                    (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor),
-                    false)
+            new SelectableTask("Koch Flake (medium subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 2 curves' calculation is a separate task.",
+                    (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 2),
+                    false),
+            new SelectableTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 4 curves' calculation is a separate task.",
+                    (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 4),
+                    false),
+            new SelectableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
+                    (var numExec) -> new SyncResourceTask(completionService, numExec),
+                    true),
+            new SelectableTask("Blocking sleep in reentrant lock", "Blocks using Thread.sleep(10) in a locked code block (with ReentrantLock)",
+                    (var numExec) -> new LockResourceTask(completionService, numExec),
+                    true),
+            new SelectableTask("Blocking sleep in semaphore", "Blocks using Thread.sleep(10) in a semaphore with 100 permits",
+                    (var numExec) -> new SyncSemaphoreTask(completionService, numExec),
+                    true)
     );
 
     ObservableList<SelectableTask> options =
@@ -168,6 +183,15 @@ public class ThreadOffApplication extends Application {
 
         numCalculationsInput.setTextFormatter(
                 new TextFormatter<>(new IntegerStringConverter(), defaultExecutions, integerFilter));
+
+        // set an upper limit of less than ten million calculations
+        final int maxLen = 7;
+        numCalculationsInput.textProperty().addListener((final ObservableValue<? extends String> ov, final String oldValue, final String newValue) -> {
+            if (numCalculationsInput.getText().length() > maxLen) {
+                String s = numCalculationsInput.getText().substring(0, maxLen);
+                numCalculationsInput.setText(s);
+            }
+        });
         noCalculationDisplay.setVisible(false);
         noCalculationDisplay.setManaged(false);
 
@@ -206,6 +230,12 @@ public class ThreadOffApplication extends Application {
             System.out.println("cancelling stats task");
             resultsCollector.cancel(true);
         }
+        // stop animation timers
+        for (AnimationTimer timer : runningAnimations) {
+            timer.stop();
+        }
+        runningAnimations.clear();
+
         if(executorService != null && !executorService.isShutdown()) {
             System.out.println("shutting down service");
             executorService.shutdownNow();
@@ -264,6 +294,8 @@ public class ThreadOffApplication extends Application {
         uiUpdater.start();
         AnimationTimer canvasUpdater = new CanvasUpdateTimer(drawableCanvas, initialData.expectedTasks(), shapes, successfulTasks);
         canvasUpdater.start();
+        runningAnimations.add(uiUpdater);
+        runningAnimations.add(canvasUpdater);
     }
 
     private TaskUiElements prepareUIForTaskRun(SelectableTask task, boolean useVThreads) {

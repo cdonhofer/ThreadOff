@@ -12,8 +12,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 
 public final class KochFlakeTaskBig extends KochFlakeTask {
-    public KochFlakeTaskBig(CompletionService<List<Shape>> completionService, Canvas canvas, Color strokeColor) {
+    private final int linesPerTask;
+
+    public KochFlakeTaskBig(CompletionService<List<Shape>> completionService, Canvas canvas, Color strokeColor, int linesPerTask) {
         super(completionService, canvas, strokeColor, 9);
+        this.linesPerTask = linesPerTask;
     }
 
     @Override
@@ -24,8 +27,8 @@ public final class KochFlakeTaskBig extends KochFlakeTask {
     @Override
     public int calculateNumTasks() {
         int numLines =  (int) (Math.pow(4, multiplicity+1)-1);
-        // every two lines, except the 3 initial ones, are calculated in pairs of two
-        return (numLines-3)/2 + 3;
+        // every two lines, except the 3 initial ones, are calculated in groups of linesPerTask
+        return (numLines-3)/linesPerTask + 3;
     }
 
     class BigKochCallable implements Callable<List<Shape>> {
@@ -64,8 +67,12 @@ public final class KochFlakeTaskBig extends KochFlakeTask {
                 // dispatch new tasks, two input lines per task
                 for (LineCoords(double x1, double y1, double x2, double y2) : lines) {
                     var newLines = splitLine(x1, y1, x2, y2);
-                    completionService.submit(new BigKochCallable(List.of(newLines.get(0), newLines.get(1)), color, currentLevel-1));
-                    completionService.submit(new BigKochCallable(List.of(newLines.get(2), newLines.get(3)), color, currentLevel-1));
+                    if(linesPerTask == 2) {
+                        completionService.submit(new BigKochCallable(List.of(newLines.get(0), newLines.get(1)), color, currentLevel-1));
+                        completionService.submit(new BigKochCallable(List.of(newLines.get(2), newLines.get(3)), color, currentLevel-1));
+                    } else {
+                        completionService.submit(new BigKochCallable(newLines, color, currentLevel-1));
+                    }
                 }
             }
 

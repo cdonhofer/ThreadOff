@@ -5,7 +5,7 @@ import javafx.scene.shape.Shape;
 import java.util.List;
 import java.util.concurrent.CompletionService;
 
-public sealed abstract class ThreadOffCalc permits BlockingTask, KochFlakeTask, PrimesCalc {
+public sealed abstract class ThreadOffCalc permits BlockingTask, KochFlakeTask, LockResourceTask, PrimesCalc, SyncResourceTask, SyncSemaphoreTask {
     protected final CompletionService<List<Shape>> completionService;
     protected final int multiplicity;
 
