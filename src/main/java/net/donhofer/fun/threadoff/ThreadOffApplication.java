@@ -64,8 +64,11 @@ public class ThreadOffApplication extends Application {
             new SelectableTask("Calculate primes to 10.000", "Calculates primes up to 10.000",
                     (var numExec) -> new PrimesCalc(completionService, numExec),
                     true),
-            new SelectableTask("Koch Flake", "Calculates a Koch-flake of grade 8, which is then displayed",
-                    (var numExec) -> new KochFlakeTask(completionService, drawableCanvas, strokeColor, backgroundColor),
+            new SelectableTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
+                    (var numExec) -> new KochFlakeTaskSmall(completionService, drawableCanvas, strokeColor),
+                    false),
+            new SelectableTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every two curves' calculation is a separate task.",
+                    (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor),
                     false)
     );
 
