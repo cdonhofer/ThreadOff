@@ -48,27 +48,35 @@ public class ThreadOffApplication extends Application {
     List<SelectableTask> selectableTasks = List.of(
             new SelectableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
                     (var numExec) -> new BlockingTask(completionService, numExec),
-                    true, 10000),
+                    () -> 800, // thread pool size
+                    true, 100000),
             new SelectableTask("Calculate primes to 10.000", "Calculates primes up to 10.000",
                     (var numExec) -> new PrimesCalc(completionService, numExec),
+                    () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
                     true, 10000),
             new SelectableTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskSmall(completionService, drawableCanvas, strokeColor),
+                    ThreadOffCalc::getThreadPoolSize, // thread pool size
                     false, 0),
             new SelectableTask("Koch Flake (medium subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 2 curves' calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 2),
+                    ThreadOffCalc::getThreadPoolSize, // thread pool size
                     false, 0),
             new SelectableTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 4 curves' calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 4),
+                    ThreadOffCalc::getThreadPoolSize, // thread pool size
                     false, 0),
             new SelectableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
                     (var numExec) -> new SyncResourceTask(completionService, numExec),
+                    () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
                     true, 100000),
             new SelectableTask("Blocking sleep in reentrant lock", "Blocks using Thread.sleep(10) in a locked code block (with ReentrantLock)",
                     (var numExec) -> new LockResourceTask(completionService, numExec),
+                    () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
                     true, 100000),
             new SelectableTask("Blocking sleep in semaphore", "Blocks using Thread.sleep(10) in a semaphore with 100 permits",
                     (var numExec) -> new SyncSemaphoreTask(completionService, numExec),
+                    () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
                     true, 100000)
     );
 
@@ -171,7 +179,9 @@ public class ThreadOffApplication extends Application {
         noCalculationLabel.setManaged(false);
 
         taskSelection.setValue(task);
+        numCalculationsInput.setText("" + task.defaultExecutions());
         numThreadsInput.hide();
+        numThreadsInput.setText("" + task.getThreadPoolSize().get());
 
         // make calculations input editable only for appropriate tasks
         taskSelection.getSelectionModel()
@@ -181,8 +191,7 @@ public class ThreadOffApplication extends Application {
                             noCalculationLabel.setVisible(!newValue.allowNumExecutions());
                             noCalculationLabel.setManaged(!newValue.allowNumExecutions());
                             if (newValue.allowNumExecutions()) numCalculationsInput.setText(newValue.defaultExecutions() +"");
-
-                            // todo get calculated default num thread from selection
+                            numThreadsInput.setText("" + newValue.getThreadPoolSize().get());
                         }
                 );
 
@@ -264,7 +273,7 @@ public class ThreadOffApplication extends Application {
         startTime = System.nanoTime();
 
         // get data required for running the tasks: initial tasks(s) and number of expected total tasks
-        ThreadOffCalc taskRunnable = selectedTask.supplier().apply(numExecutions);
+        ThreadOffCalc taskRunnable = selectedTask.getHandler().apply(numExecutions);
         InitialData initialData;
 
         initialData = taskRunnable.getTasks();
