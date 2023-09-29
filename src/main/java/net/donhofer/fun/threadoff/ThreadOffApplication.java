@@ -4,7 +4,6 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
@@ -15,6 +14,8 @@ import javafx.stage.Stage;
 import net.donhofer.fun.threadoff.calc.*;
 import net.donhofer.fun.threadoff.data.InitialData;
 import net.donhofer.fun.threadoff.data.SelectableTask;
+import net.donhofer.fun.threadoff.data.SelectableTask.RepeatableTask;
+import net.donhofer.fun.threadoff.data.SelectableTask.SingularTask;
 import net.donhofer.fun.threadoff.data.ThreadType;
 import net.donhofer.fun.threadoff.ui.*;
 
@@ -42,47 +43,42 @@ public class ThreadOffApplication extends Application {
     Color backgroundColor = Color.valueOf("#f4f4f4");
     private final IntegerField numCalculationsInput = new IntegerField(UIConfig.defaultExecutions, UIConfig.minExecutions, UIConfig.maxExecutions);
     private final IntegerField numThreadsInput = new IntegerField(Runtime.getRuntime().availableProcessors(), UIConfig.minThreads, UIConfig.maxThreads);
-    private final Label noCalculationLabel = new Label("n/A");
+    private final ToggleLabel noCalculationLabel = new ToggleLabel("n/A");
     private final ToggleLabel numThreadsLabel = new ToggleLabel("Pool size:");
 
     List<SelectableTask> selectableTasks = List.of(
-            new SelectableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
+            new RepeatableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
                     (var numExec) -> new BlockingTask(completionService, numExec),
                     () -> 800, // thread pool size
-                    true, 100000),
-            new SelectableTask("Calculate primes to 10.000", "Calculates primes up to 10.000",
+                    100000),
+            new RepeatableTask("Calculate primes to 10.000", "Calculates primes up to 10.000",
                     (var numExec) -> new PrimesCalc(completionService, numExec),
                     () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
-                    true, 10000),
-            new SelectableTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
+                    10000),
+            new SingularTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskSmall(completionService, drawableCanvas, strokeColor),
-                    ThreadOffCalc::getThreadPoolSize, // thread pool size
-                    false, 0),
-            new SelectableTask("Koch Flake (medium subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 2 curves' calculation is a separate task.",
+                    ThreadOffCalc::getThreadPoolSize),
+            new SingularTask("Koch Flake (medium subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 2 curves' calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 2),
-                    ThreadOffCalc::getThreadPoolSize, // thread pool size
-                    false, 0),
-            new SelectableTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 4 curves' calculation is a separate task.",
+                    ThreadOffCalc::getThreadPoolSize),
+            new SingularTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 4 curves' calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 4),
-                    ThreadOffCalc::getThreadPoolSize, // thread pool size
-                    false, 0),
-            new SelectableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
+                    ThreadOffCalc::getThreadPoolSize),
+            new RepeatableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
                     (var numExec) -> new SyncResourceTask(completionService, numExec),
                     () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
-                    true, 100000),
-            new SelectableTask("Blocking sleep in reentrant lock", "Blocks using Thread.sleep(10) in a locked code block (with ReentrantLock)",
+                    100000),
+            new RepeatableTask("Blocking sleep in reentrant lock", "Blocks using Thread.sleep(10) in a locked code block (with ReentrantLock)",
                     (var numExec) -> new LockResourceTask(completionService, numExec),
                     () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
-                    true, 100000),
-            new SelectableTask("Blocking sleep in semaphore", "Blocks using Thread.sleep(10) in a semaphore with 100 permits",
+                    100000),
+            new RepeatableTask("Blocking sleep in semaphore", "Blocks using Thread.sleep(10) in a semaphore with 100 permits",
                     (var numExec) -> new SyncSemaphoreTask(completionService, numExec),
                     () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
-                    true, 100000)
+                    100000)
     );
 
-    ObservableList<SelectableTask> taskOptions =
-            FXCollections.observableArrayList(selectableTasks);
-    final ComboBox<SelectableTask> taskSelection = new ComboBox<>(taskOptions);
+    final TaskComboBox taskSelection = new TaskComboBox(selectableTasks);
     final ComboBox<ThreadType> threadTypeSelection = new ComboBox<>(FXCollections.observableArrayList(ThreadType.VIRTUAL, ThreadType.PLATFORM));
 
     AtomicInteger successfulTasks = new AtomicInteger(0);
@@ -179,7 +175,9 @@ public class ThreadOffApplication extends Application {
         noCalculationLabel.setManaged(false);
 
         taskSelection.setValue(task);
-        numCalculationsInput.setText("" + task.defaultExecutions());
+        if (task instanceof RepeatableTask t) {
+            numCalculationsInput.setText("" + t.defaultExecutions());
+        }
         numThreadsInput.hide();
         numThreadsInput.setText("" + task.getThreadPoolSize().get());
 
@@ -187,10 +185,12 @@ public class ThreadOffApplication extends Application {
         taskSelection.getSelectionModel()
                 .selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
-                            numCalculationsInput.toggle(newValue.allowNumExecutions());
-                            noCalculationLabel.setVisible(!newValue.allowNumExecutions());
-                            noCalculationLabel.setManaged(!newValue.allowNumExecutions());
-                            if (newValue.allowNumExecutions()) numCalculationsInput.setText(newValue.defaultExecutions() +"");
+                            final boolean isRepeatable = newValue instanceof RepeatableTask;
+                            numCalculationsInput.toggle(isRepeatable);
+                            noCalculationLabel.toggle(!isRepeatable);
+                            if (newValue instanceof RepeatableTask t) {
+                                numCalculationsInput.setText(t.defaultExecutions() + "");
+                            }
                             numThreadsInput.setText("" + newValue.getThreadPoolSize().get());
                         }
                 );
