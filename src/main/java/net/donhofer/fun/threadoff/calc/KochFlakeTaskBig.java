@@ -1,6 +1,5 @@
 package net.donhofer.fun.threadoff.calc;
 
-import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 import net.donhofer.fun.threadoff.ui.ColoredLine;
@@ -14,8 +13,8 @@ import java.util.concurrent.CompletionService;
 public final class KochFlakeTaskBig extends KochFlakeTask {
     private final int linesPerTask;
 
-    public KochFlakeTaskBig(CompletionService<List<Shape>> completionService, Canvas canvas, Color strokeColor, int linesPerTask) {
-        super(completionService, canvas, strokeColor, 9);
+    public KochFlakeTaskBig(CompletionService<List<Shape>> completionService, Color strokeColor, double canvasWidth, double canvasHeight, int linesPerTask) {
+        super(completionService, strokeColor, 9, canvasHeight, canvasWidth);
         this.linesPerTask = linesPerTask;
     }
 

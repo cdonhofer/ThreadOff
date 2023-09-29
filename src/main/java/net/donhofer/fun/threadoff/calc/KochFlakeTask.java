@@ -1,6 +1,5 @@
 package net.donhofer.fun.threadoff.calc;
 
-import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 import net.donhofer.fun.threadoff.data.InitialData;
@@ -10,41 +9,45 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 
-public abstract sealed class KochFlakeTask extends ThreadOffCalc permits KochFlakeTaskBig, KochFlakeTaskSmall {
-    private Canvas canvas;
+public abstract sealed class KochFlakeTask extends ThreadOffCalc implements GraphicalTask permits KochFlakeTaskBig, KochFlakeTaskSmall {
     private Color strokeColor;
+    double canvasWidth, canvasHeight;
 
-    public KochFlakeTask(CompletionService<List<Shape>> completionService) {
+    public KochFlakeTask(CompletionService<List<Shape>> completionService, double canvasWidth, double canvasHeight) {
         // fixed multiplicity for this task
         super(completionService, 8);
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
     }
 
-    protected KochFlakeTask(CompletionService<List<Shape>> completionService, int multiplicity) {
+    protected KochFlakeTask(CompletionService<List<Shape>> completionService, int multiplicity, double canvasWidth, double canvasHeight) {
         super(completionService, multiplicity);
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
     }
 
 
     public KochFlakeTask(CompletionService<List<Shape>> completionService,
-                         Canvas canvas, Color strokeColor) {
-        this(completionService);
-        this.canvas = canvas;
+                         Color strokeColor, double canvasHeight, double canvasWidth) {
+        this(completionService, canvasWidth, canvasHeight);
         this.strokeColor = strokeColor;
     }
 
-    protected KochFlakeTask(CompletionService<List<Shape>> completionService,
-                              Canvas canvas, Color strokeColor, int multiplicity) {
-        this(completionService, multiplicity);
-        this.canvas = canvas;
+    protected KochFlakeTask(CompletionService<List<Shape>> completionService, Color strokeColor, int multiplicity, double canvasHeight, double canvasWidth) {
+        this(completionService, multiplicity, canvasWidth, canvasHeight);
         this.strokeColor = strokeColor;
+    }
+
+    @Override
+    public void setCanvasDimensions(double canvasWidth, double canvasHeight) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
     }
 
     @Override
     public InitialData getTasks() {
 
         // calculations for initial lines
-        double canvasWidth = canvas.getWidth();
-        double canvasHeight = canvas.getHeight();
-
         // Calculate margin and side length to center the snowflake in the canvas
         double margin = Math.min(canvasWidth, canvasHeight) * 0.1;
         double sideLength = Math.min(canvasWidth, canvasHeight) - 2 * margin;

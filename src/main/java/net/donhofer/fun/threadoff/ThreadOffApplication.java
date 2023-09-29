@@ -2,13 +2,7 @@ package net.donhofer.fun.threadoff;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import net.donhofer.fun.threadoff.calc.*;
@@ -26,25 +20,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ThreadOffApplication extends Application {
-    private Button start;
-    private Button stop;
-    private VBox mainCanvas;
-    private VBox statsSideBar;
+
     ExecutorService executorService;
     CompletionService<List<Shape>> completionService;
     private final List<AnimationTimer> runningAnimations = new ArrayList<>();
     long startTime;
     AtomicLong elapsedTime = new AtomicLong(0);
     Future<Void> resultsCollector;
-
-    private final double canvasStartingWidth = 400, canvasStartingHeight = 400;
-    Canvas drawableCanvas = new Canvas(canvasStartingWidth, canvasStartingHeight);
-    Color strokeColor = Color.BLACK;
-    Color backgroundColor = Color.valueOf("#f4f4f4");
-    private final IntegerField numCalculationsInput = new IntegerField(UIConfig.defaultExecutions, UIConfig.minExecutions, UIConfig.maxExecutions);
-    private final IntegerField numThreadsInput = new IntegerField(Runtime.getRuntime().availableProcessors(), UIConfig.minThreads, UIConfig.maxThreads);
-    private final ToggleLabel noCalculationLabel = new ToggleLabel("n/A");
-    private final ToggleLabel numThreadsLabel = new ToggleLabel("Pool size:");
 
     List<SelectableTask> selectableTasks = List.of(
             new RepeatableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
@@ -56,13 +38,13 @@ public class ThreadOffApplication extends Application {
                     () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size
                     10000),
             new SingularTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
-                    (var numExec) -> new KochFlakeTaskSmall(completionService, drawableCanvas, strokeColor),
+                    (var numExec) -> new KochFlakeTaskSmall(completionService, UIConfig.strokeColor, UIConfig.defaultCanvasWidth, UIConfig.defaultCanvasHeight),
                     ThreadOffCalc::getThreadPoolSize),
             new SingularTask("Koch Flake (medium subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 2 curves' calculation is a separate task.",
-                    (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 2),
+                    (var numExec) -> new KochFlakeTaskBig(completionService, UIConfig.strokeColor, UIConfig.defaultCanvasWidth, UIConfig.defaultCanvasHeight, 2),
                     ThreadOffCalc::getThreadPoolSize),
             new SingularTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 4 curves' calculation is a separate task.",
-                    (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 4),
+                    (var numExec) -> new KochFlakeTaskBig(completionService, UIConfig.strokeColor, UIConfig.defaultCanvasWidth, UIConfig.defaultCanvasHeight, 4),
                     ThreadOffCalc::getThreadPoolSize),
             new RepeatableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
                     (var numExec) -> new SyncResourceTask(completionService, numExec),
@@ -78,146 +60,27 @@ public class ThreadOffApplication extends Application {
                     100000)
     );
 
-    final TaskComboBox taskSelection = new TaskComboBox(selectableTasks);
-    final ComboBox<ThreadType> threadTypeSelection = new ComboBox<>(FXCollections.observableArrayList(ThreadType.VIRTUAL, ThreadType.PLATFORM));
 
     AtomicInteger successfulTasks = new AtomicInteger(0);
     ConcurrentLinkedQueue<Shape> shapes = new ConcurrentLinkedQueue<>();
 
+    ThreadOffUI ui;
+    Scene scene;
     @Override
     public void start(Stage stage) {
-
-        // build main component structure
-        Pane rootPane = new Pane();
-        Scene scene = new Scene(rootPane, UIConfig.defaultAppWidth, UIConfig.defaultAppHeight);
-        scene.getRoot().getStylesheets().add(getClass().getResource("Style.css").toExternalForm());
-
-        BorderPane mainWindow = new BorderPane();
-        rootPane.getChildren().add(mainWindow);
-        mainWindow.prefWidthProperty().bind(rootPane.widthProperty());
-        mainWindow.prefHeightProperty().bind(rootPane.heightProperty());
-
-        ScrollPane container = new ScrollPane();
-        mainCanvas = new VBox(5);
-        container.setContent(mainCanvas);
-        container.setFitToWidth(true);
-        container.setFitToHeight(true);
-
-        ScrollPane sideBar = new ScrollPane();
-        sideBar.setFitToWidth(true);
-        statsSideBar = new VBox();
-        sideBar.setContent(statsSideBar);
-
-        SplitPane splitPane = new SplitPane();
-        splitPane.getItems().addAll(container, sideBar);
-        splitPane.setDividerPositions(0.7); // 70% to container, 30% to statsSideBar
-
-        // build bottom box / menu with inputs
-        final VBox bottomPanel = buildBottomPanel();
-
-        // build title bar
-        HBox titleBar = new HBox();
-        titleBar.getStyleClass().add("title-bar");
-        Label titleLabel = new Label("ThreadOff: vThreads vs pThreads!");
-        titleLabel.getStyleClass().add("title-label");
-        titleBar.getChildren().add(titleLabel);
-
-        // assign css classes and ids
-        mainCanvas.setId("mainArea");
-        statsSideBar.setId("sidebar");
-        statsSideBar.getStyleClass().add("padding");
-        statsSideBar.prefWidthProperty().bind(sideBar.widthProperty());
-        container.setId("canvasArea");
-        container.getStyleClass().add("padding");
-        bottomPanel.getStyleClass().add("horizontal-bar");
-        start.getStyleClass().add("start-button");
-        stop.getStyleClass().add("stop-button");
-        sideBar.setId("sidebar-container");
-        sideBar.getStyleClass().add("padding");
-
-        // assign positions in main structure
-        mainWindow.setTop(titleBar);
-        mainWindow.setCenter(splitPane); // Set SplitPane to center
-        mainWindow.setBottom(bottomPanel);
-
+        stage.setTitle("ThreadOff!");
+        ui = new ThreadOffUI(
+                selectableTasks,
+                this::runTask,
+                this::stopCalculations,
+                getClass().getResource("Style.css").toExternalForm()
+        );
+        scene = ui.getScene();
         stage.setScene(scene);
         stage.show();
     }
 
-    private VBox buildBottomPanel() {
-        // define a default tasks, used to set the correct starting states for the widgets
-        SelectableTask task = selectableTasks.get(0);
 
-        VBox bottomPanel = new VBox();
-        HBox inputFieldsRow = new HBox();
-        HBox buttonRow = new HBox();
-        inputFieldsRow.getStyleClass().add("input-panel");
-        buttonRow.getStyleClass().add("input-panel");
-        bottomPanel.getChildren().addAll(inputFieldsRow, buttonRow);
-
-        // start button
-        Region startIcon = new Region();
-        startIcon.getStyleClass().add("icon");
-        start = new Button("Start", startIcon);
-        start.getStyleClass().add("start-button");
-
-        // stop button
-        Region stopIcon = new Region();
-        stopIcon.getStyleClass().add("icon");
-        stop = new Button("Stop", stopIcon);
-        stop.getStyleClass().add("stop-button");
-
-        // assign actions to the buttons
-        start.setOnAction(startClickEvent -> runTask());
-        stop.setOnAction(endClickEvent -> stopCalculations());
-
-        noCalculationLabel.setVisible(false);
-        noCalculationLabel.setManaged(false);
-
-        taskSelection.setValue(task);
-        if (task instanceof RepeatableTask t) {
-            numCalculationsInput.setText("" + t.defaultExecutions());
-        }
-        numThreadsInput.hide();
-        numThreadsInput.setText("" + task.getThreadPoolSize().get());
-
-        // make calculations input editable only for appropriate tasks
-        taskSelection.getSelectionModel()
-                .selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> {
-                            final boolean isRepeatable = newValue instanceof RepeatableTask;
-                            numCalculationsInput.toggle(isRepeatable);
-                            noCalculationLabel.toggle(!isRepeatable);
-                            if (newValue instanceof RepeatableTask t) {
-                                numCalculationsInput.setText(t.defaultExecutions() + "");
-                            }
-                            numThreadsInput.setText("" + newValue.getThreadPoolSize().get());
-                        }
-                );
-
-
-        threadTypeSelection.setValue(threadTypeSelection.getItems().get(0));
-        threadTypeSelection.getSelectionModel()
-                .selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> {
-                    numThreadsLabel.toggle(ThreadType.PLATFORM == newValue);
-                    numThreadsInput.toggle(ThreadType.PLATFORM == newValue);
-                });
-
-        inputFieldsRow.getChildren().addAll(
-                new Label("Task:"),
-                taskSelection,
-                new Label("# calculations:"),
-                noCalculationLabel,
-                numCalculationsInput,
-                new Label("Thread type:"),
-                threadTypeSelection,
-                numThreadsLabel,
-                numThreadsInput
-        );
-        buttonRow.getChildren().addAll(start, stop);
-        return bottomPanel;
-    }
 
     private void stopCalculations() {
         System.out.println("in stopCalculations!-------------------------");
@@ -235,9 +98,7 @@ public class ThreadOffApplication extends Application {
             System.out.println("shutting down service");
             executorService.shutdownNow();
             try {
-                System.out.println("awaiting termination");
                 executorService.awaitTermination(5, TimeUnit.SECONDS);
-                System.out.println("post await ...");
             } catch (InterruptedException e) {
                 // todo handle this better
                 throw new RuntimeException(e);
@@ -248,19 +109,18 @@ public class ThreadOffApplication extends Application {
 
     private void runTask() {
         // get user selection from inputs
-        final boolean useVThreads = ThreadType.VIRTUAL == threadTypeSelection.getValue();
-        final int numExecutions = Integer.parseInt(numCalculationsInput.getText());
-        var selectedTask = taskSelection.getValue();
+        final boolean useVThreads = ThreadType.VIRTUAL == ui.getThreadTypeSelection().getValue();
+        final int numExecutions = Integer.parseInt(ui.getNumCalculationsInput().getText());
+        var selectedTask = ui.getTaskSelection().getValue();
 
         // end a possible still running task
         stopCalculations();
 
         // prepare main canvas
-        final TaskUiElements uiElements = prepareUIForTaskRun(selectedTask, useVThreads);
-
+        final TaskUiElements uiElements = ui.prepareUIForTaskRun(selectedTask, useVThreads);
 
         if (executorService == null || executorService.isShutdown()) {
-            executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(Integer.parseInt(numThreadsInput.getText()));
+            executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(Integer.parseInt(ui.getNumThreadsInput().getText()));
         }
         completionService = new ExecutorCompletionService<>(executorService);
 
@@ -273,10 +133,16 @@ public class ThreadOffApplication extends Application {
         startTime = System.nanoTime();
 
         // get data required for running the tasks: initial tasks(s) and number of expected total tasks
-        ThreadOffCalc taskRunnable = selectedTask.getHandler().apply(numExecutions);
+        ThreadOffCalc taskHandler = selectedTask.getHandler().apply(numExecutions);
+
+        // pass canvas size to graphical tasks
+        if (taskHandler instanceof GraphicalTask gt) {
+            gt.setCanvasDimensions(ui.getDrawableCanvas().getWidth(), ui.getDrawableCanvas().getHeight());
+        }
+
         InitialData initialData;
 
-        initialData = taskRunnable.getTasks();
+        initialData = taskHandler.getTasks();
         // submit task for collecting the finished tasks' data
         resultsCollector = executorService.submit(() -> collectFinishedTasks(completionService, initialData.expectedTasks()));
         // add initial tasks
@@ -287,39 +153,12 @@ public class ThreadOffApplication extends Application {
         // start animation timers to update the UI
         AnimationTimer uiUpdater = new UiUpdateTimer(uiElements, initialData.expectedTasks(), successfulTasks, elapsedTime);
         uiUpdater.start();
-        AnimationTimer canvasUpdater = new CanvasUpdateTimer(drawableCanvas, initialData.expectedTasks(), shapes, successfulTasks);
+        AnimationTimer canvasUpdater = new CanvasUpdateTimer(ui.getDrawableCanvas(), initialData.expectedTasks(), shapes, successfulTasks);
         canvasUpdater.start();
         runningAnimations.add(uiUpdater);
         runningAnimations.add(canvasUpdater);
     }
 
-    private TaskUiElements prepareUIForTaskRun(SelectableTask task, boolean useVThreads) {
-        mainCanvas.getChildren().clear();
-        ProgressBar progressBar = new ProgressBar();
-        progressBar.setProgress(0F);
-        progressBar.getStyleClass().add("progress-bar");
-
-        mainCanvas.getChildren().add(new Label("Task: " + task.name()));
-        mainCanvas.getChildren().add(new Label("Description: " + task.description()));
-        mainCanvas.getChildren().add(progressBar);
-
-        // canvas for visual tasks to draw on
-        drawableCanvas = new Canvas(mainCanvas.getWidth() * 0.8, mainCanvas.getHeight() * 0.8);
-        drawableCanvas.getGraphicsContext2D().setStroke(strokeColor);
-        drawableCanvas.getGraphicsContext2D().setFill(backgroundColor);
-        mainCanvas.getChildren().add(drawableCanvas);
-
-        //add new section on top of stats canvas
-        final VBox newStatsBox = new VBox();
-        newStatsBox.getStyleClass().add("sidebar-box");
-        statsSideBar.getChildren().add(0, newStatsBox);
-
-        VBox statsContainer = (VBox) statsSideBar.getChildren().get(0);
-        StatsBox statsBox = new StatsBox(useVThreads, task.name());
-        Platform.runLater(() -> statsContainer.getChildren().add(statsBox));
-
-        return new TaskUiElements(progressBar, statsBox);
-    }
 
     private Void collectFinishedTasks(CompletionService<List<Shape>> completionService, int numTasks) {
 
