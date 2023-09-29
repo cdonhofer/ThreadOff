@@ -3,7 +3,6 @@ package net.donhofer.fun.threadoff;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -13,29 +12,22 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
-import javafx.util.converter.IntegerStringConverter;
 import net.donhofer.fun.threadoff.calc.*;
-import net.donhofer.fun.threadoff.ui.CanvasUpdateTimer;
-import net.donhofer.fun.threadoff.ui.StatsBox;
-import net.donhofer.fun.threadoff.ui.TaskUiElements;
-import net.donhofer.fun.threadoff.ui.UiUpdateTimer;
+import net.donhofer.fun.threadoff.data.InitialData;
+import net.donhofer.fun.threadoff.data.SelectableTask;
+import net.donhofer.fun.threadoff.data.ThreadType;
+import net.donhofer.fun.threadoff.ui.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.UnaryOperator;
 
 public class ThreadOffApplication extends Application {
-    private Scene scene;
-    private Pane rootPane;
     private Button start;
     private Button stop;
     private VBox mainCanvas;
-    private BorderPane mainWindow;
-    private ScrollPane container;
-    private ScrollPane sideBar;
     private VBox statsSideBar;
     ExecutorService executorService;
     CompletionService<List<Shape>> completionService;
@@ -48,51 +40,42 @@ public class ThreadOffApplication extends Application {
     Canvas drawableCanvas = new Canvas(canvasStartingWidth, canvasStartingHeight);
     Color strokeColor = Color.BLACK;
     Color backgroundColor = Color.valueOf("#f4f4f4");
-
-    private final int defaultExecutions = 1000;
-    private final TextField numCalculationsInput = new TextField();
-    private final Label noCalculationDisplay = new Label("n/A");
-    UnaryOperator<TextFormatter.Change> integerFilter = change -> {
-        String newText = change.getControlNewText();
-        if (newText.matches("([1-9][0-9]*)?")) {
-            return change;
-        }
-        return null;
-    };
+    private final IntegerField numCalculationsInput = new IntegerField(UIConfig.defaultExecutions, UIConfig.minExecutions, UIConfig.maxExecutions);
+    private final IntegerField numThreadsInput = new IntegerField(Runtime.getRuntime().availableProcessors(), UIConfig.minThreads, UIConfig.maxThreads);
+    private final Label noCalculationLabel = new Label("n/A");
+    private final ToggleLabel numThreadsLabel = new ToggleLabel("Pool size:");
 
     List<SelectableTask> selectableTasks = List.of(
             new SelectableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
                     (var numExec) -> new BlockingTask(completionService, numExec),
-                    true),
+                    true, 10000),
             new SelectableTask("Calculate primes to 10.000", "Calculates primes up to 10.000",
                     (var numExec) -> new PrimesCalc(completionService, numExec),
-                    true),
+                    true, 10000),
             new SelectableTask("Koch Flake (small subtasks)", "Calculates a Koch-flake of grade 8, which is then displayed. Every single curve's calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskSmall(completionService, drawableCanvas, strokeColor),
-                    false),
+                    false, 0),
             new SelectableTask("Koch Flake (medium subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 2 curves' calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 2),
-                    false),
+                    false, 0),
             new SelectableTask("Koch Flake (larger subtasks)", "Calculates a Koch-flake of grade 9, which is then displayed. Every 4 curves' calculation is a separate task.",
                     (var numExec) -> new KochFlakeTaskBig(completionService, drawableCanvas, strokeColor, 4),
-                    false),
+                    false, 0),
             new SelectableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
                     (var numExec) -> new SyncResourceTask(completionService, numExec),
-                    true),
+                    true, 100000),
             new SelectableTask("Blocking sleep in reentrant lock", "Blocks using Thread.sleep(10) in a locked code block (with ReentrantLock)",
                     (var numExec) -> new LockResourceTask(completionService, numExec),
-                    true),
+                    true, 100000),
             new SelectableTask("Blocking sleep in semaphore", "Blocks using Thread.sleep(10) in a semaphore with 100 permits",
                     (var numExec) -> new SyncSemaphoreTask(completionService, numExec),
-                    true)
+                    true, 100000)
     );
 
-    ObservableList<SelectableTask> options =
+    ObservableList<SelectableTask> taskOptions =
             FXCollections.observableArrayList(selectableTasks);
-    final ComboBox<SelectableTask> taskSelection = new ComboBox<>(options);
-    //TODO switch from strings to some type
-    final ComboBox<String> threadTypeSelection = new ComboBox<>(FXCollections.observableArrayList("vThreads", "pThreads"));
-
+    final ComboBox<SelectableTask> taskSelection = new ComboBox<>(taskOptions);
+    final ComboBox<ThreadType> threadTypeSelection = new ComboBox<>(FXCollections.observableArrayList(ThreadType.VIRTUAL, ThreadType.PLATFORM));
 
     AtomicInteger successfulTasks = new AtomicInteger(0);
     ConcurrentLinkedQueue<Shape> shapes = new ConcurrentLinkedQueue<>();
@@ -101,22 +84,22 @@ public class ThreadOffApplication extends Application {
     public void start(Stage stage) {
 
         // build main component structure
-        rootPane = new Pane();
-        scene = new Scene(rootPane, 1000, 1000);
+        Pane rootPane = new Pane();
+        Scene scene = new Scene(rootPane, UIConfig.defaultAppWidth, UIConfig.defaultAppHeight);
         scene.getRoot().getStylesheets().add(getClass().getResource("Style.css").toExternalForm());
 
-        mainWindow = new BorderPane();
+        BorderPane mainWindow = new BorderPane();
         rootPane.getChildren().add(mainWindow);
         mainWindow.prefWidthProperty().bind(rootPane.widthProperty());
         mainWindow.prefHeightProperty().bind(rootPane.heightProperty());
 
-        container = new ScrollPane();
+        ScrollPane container = new ScrollPane();
         mainCanvas = new VBox(5);
         container.setContent(mainCanvas);
         container.setFitToWidth(true);
         container.setFitToHeight(true);
 
-        sideBar = new ScrollPane();
+        ScrollPane sideBar = new ScrollPane();
         sideBar.setFitToWidth(true);
         statsSideBar = new VBox();
         sideBar.setContent(statsSideBar);
@@ -158,6 +141,9 @@ public class ThreadOffApplication extends Application {
     }
 
     private VBox buildBottomPanel() {
+        // define a default tasks, used to set the correct starting states for the widgets
+        SelectableTask task = selectableTasks.get(0);
+
         VBox bottomPanel = new VBox();
         HBox inputFieldsRow = new HBox();
         HBox buttonRow = new HBox();
@@ -181,44 +167,44 @@ public class ThreadOffApplication extends Application {
         start.setOnAction(startClickEvent -> runTask());
         stop.setOnAction(endClickEvent -> stopCalculations());
 
-        numCalculationsInput.setTextFormatter(
-                new TextFormatter<>(new IntegerStringConverter(), defaultExecutions, integerFilter));
+        noCalculationLabel.setVisible(false);
+        noCalculationLabel.setManaged(false);
 
-        // set an upper limit of less than ten million calculations
-        final int maxLen = 7;
-        numCalculationsInput.textProperty().addListener((final ObservableValue<? extends String> ov, final String oldValue, final String newValue) -> {
-            if (numCalculationsInput.getText().length() > maxLen) {
-                String s = numCalculationsInput.getText().substring(0, maxLen);
-                numCalculationsInput.setText(s);
-            }
-        });
-        noCalculationDisplay.setVisible(false);
-        noCalculationDisplay.setManaged(false);
-
-        taskSelection.setValue(selectableTasks.get(0));
+        taskSelection.setValue(task);
+        numThreadsInput.hide();
 
         // make calculations input editable only for appropriate tasks
         taskSelection.getSelectionModel()
                 .selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
-                            numCalculationsInput.setEditable(newValue.allowNumExecutions());
-                            numCalculationsInput.setVisible(newValue.allowNumExecutions());
-                            numCalculationsInput.setManaged(newValue.allowNumExecutions());
-                            noCalculationDisplay.setVisible(!newValue.allowNumExecutions());
-                            noCalculationDisplay.setManaged(!newValue.allowNumExecutions());
+                            numCalculationsInput.toggle(newValue.allowNumExecutions());
+                            noCalculationLabel.setVisible(!newValue.allowNumExecutions());
+                            noCalculationLabel.setManaged(!newValue.allowNumExecutions());
+                            if (newValue.allowNumExecutions()) numCalculationsInput.setText(newValue.defaultExecutions() +"");
+
+                            // todo get calculated default num thread from selection
                         }
                 );
 
+
         threadTypeSelection.setValue(threadTypeSelection.getItems().get(0));
+        threadTypeSelection.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    numThreadsLabel.toggle(ThreadType.PLATFORM == newValue);
+                    numThreadsInput.toggle(ThreadType.PLATFORM == newValue);
+                });
 
         inputFieldsRow.getChildren().addAll(
                 new Label("Task:"),
                 taskSelection,
                 new Label("# calculations:"),
-                noCalculationDisplay,
+                noCalculationLabel,
                 numCalculationsInput,
                 new Label("Thread type:"),
-                threadTypeSelection
+                threadTypeSelection,
+                numThreadsLabel,
+                numThreadsInput
         );
         buttonRow.getChildren().addAll(start, stop);
         return bottomPanel;
@@ -253,7 +239,7 @@ public class ThreadOffApplication extends Application {
 
     private void runTask() {
         // get user selection from inputs
-        final boolean useVThreads = "vThreads".equals(threadTypeSelection.getValue());
+        final boolean useVThreads = ThreadType.VIRTUAL == threadTypeSelection.getValue();
         final int numExecutions = Integer.parseInt(numCalculationsInput.getText());
         var selectedTask = taskSelection.getValue();
 
@@ -265,7 +251,7 @@ public class ThreadOffApplication extends Application {
 
 
         if (executorService == null || executorService.isShutdown()) {
-            executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(Integer.parseInt(numThreadsInput.getText()));
         }
         completionService = new ExecutorCompletionService<>(executorService);
 

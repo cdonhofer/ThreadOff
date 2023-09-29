@@ -3,6 +3,7 @@ package net.donhofer.fun.threadoff.calc;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
+import net.donhofer.fun.threadoff.data.InitialData;
 
 import java.util.ArrayList;
 import java.util.List;

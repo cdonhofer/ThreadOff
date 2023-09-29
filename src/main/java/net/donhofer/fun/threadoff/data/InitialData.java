@@ -1,4 +1,4 @@
-package net.donhofer.fun.threadoff.calc;
+package net.donhofer.fun.threadoff.data;
 
 import javafx.scene.shape.Shape;
 
