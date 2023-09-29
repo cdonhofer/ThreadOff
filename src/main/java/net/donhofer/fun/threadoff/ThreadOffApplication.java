@@ -85,7 +85,6 @@ public class ThreadOffApplication extends Application {
     private void stopCalculations() {
         System.out.println("in stopCalculations!-------------------------");
         if (resultsCollector != null) {
-            System.out.println("cancelling stats task");
             resultsCollector.cancel(true);
         }
         // stop animation timers
@@ -95,7 +94,6 @@ public class ThreadOffApplication extends Application {
         runningAnimations.clear();
 
         if(executorService != null && !executorService.isShutdown()) {
-            System.out.println("shutting down service");
             executorService.shutdownNow();
             try {
                 executorService.awaitTermination(5, TimeUnit.SECONDS);
