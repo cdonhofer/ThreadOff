@@ -20,7 +20,7 @@ public class StatsBox extends VBox {
         getChildren().add(headerLabel);
         taskLabel = new KeyValueLabel("Task", taskName);
         durationLabel = new KeyValueLabel("Seconds", String.valueOf(durationSeconds));
-        calculationsLabel = new KeyValueLabel("Calculations", String.valueOf(successful));
+        calculationsLabel = new KeyValueLabel("Calculations / tasks", String.valueOf(successful));
         getChildren().add(taskLabel);
         getChildren().add(durationLabel);
         getChildren().add(calculationsLabel);
@@ -29,17 +29,9 @@ public class StatsBox extends VBox {
         }
     }
 
-    public double getDurationSeconds() {
-        return durationSeconds;
-    }
-
     public void setDurationSeconds(double durationSeconds) {
         this.durationSeconds = durationSeconds;
         this.durationLabel.setValue(String.valueOf(durationSeconds));
-    }
-
-    public int getSuccessful() {
-        return successful;
     }
 
     public void setSuccessful(int successful) {

@@ -47,7 +47,7 @@
     -fx-max-width: Infinity;
 }
 
-.stats-box Label, .label {
+.stats-box Label, .stats-box .label {
     -fx-border-color: transparent;
     -fx-border-width: 0;
     -fx-pref-height: 25px;
@@ -56,7 +56,23 @@
     -fx-border-width: 0 0 2 0;
     -fx-border-color: #FFB74D;
 }
-
+.details-box {
+    -fx-border-width: 0;
+    -fx-background-color: #FFF3E0;
+    -fx-spacing: 5px;
+    -fx-padding: 10px;
+}
+.details-box-header {
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: #FFB74D;
+    -fx-font-weight: bold;
+}
+.details-box-content {
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-padding: 10px;
+    -fx-text-fill: #eeeeee;
+}
 
 
 .horizontal-bar, .input-panel {

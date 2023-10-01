@@ -57,15 +57,15 @@ public final class KochFlakeTaskBig extends KochFlakeTask {
             if (currentLevel == 0 || Thread.currentThread().isInterrupted()) {
                 results = new ArrayList<>();
 
-                for (LineCoords(double x1, double y1, double x2, double y2) : lines) {
-                    results.add(new ColoredLine(x1, y1, x2, y2, color));
+                for (LineCoords coords : lines) {
+                    results.add(new ColoredLine(coords.x1(), coords.y1(), coords.x2(), coords.y2(), color));
                 }
 
             } else {
                 // final level not yet reached
                 // dispatch new tasks, two input lines per task
-                for (LineCoords(double x1, double y1, double x2, double y2) : lines) {
-                    var newLines = splitLine(x1, y1, x2, y2);
+                for (LineCoords coords : lines) {
+                    var newLines = splitLine(coords.x1(), coords.y1(), coords.x2(), coords.y2());
                     if(linesPerTask == 2) {
                         completionService.submit(new BigKochCallable(List.of(newLines.get(0), newLines.get(1)), color, currentLevel-1));
                         completionService.submit(new BigKochCallable(List.of(newLines.get(2), newLines.get(3)), color, currentLevel-1));

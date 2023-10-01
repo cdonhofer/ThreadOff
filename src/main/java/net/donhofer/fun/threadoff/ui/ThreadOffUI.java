@@ -5,6 +5,8 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import net.donhofer.fun.threadoff.data.SelectableTask;
 import net.donhofer.fun.threadoff.data.ThreadType;
 
@@ -113,13 +115,13 @@ public class ThreadOffUI {
         start.setOnAction(startClickEvent -> runTasks.run());
         stop.setOnAction(endClickEvent -> stopCalculations.run());
 
-        noCalculationLabel.setVisible(false);
-        noCalculationLabel.setManaged(false);
+        noCalculationLabel.hide();
 
         taskSelection.setValue(task);
         if (task instanceof SelectableTask.RepeatableTask t) {
             numCalculationsInput.setText("" + t.defaultExecutions());
         }
+        numThreadsLabel.hide();
         numThreadsInput.hide();
         numThreadsInput.setText("" + task.getThreadPoolSize().get());
 
@@ -168,8 +170,15 @@ public class ThreadOffUI {
         progressBar.getStyleClass().add("progress-bar");
         StatsBox statsBox = new StatsBox(useVThreads, task.name());
 
-        mainCanvas.getChildren().add(new Label("Task: " + task.name()));
-        mainCanvas.getChildren().add(new Label("Description: " + task.description()));
+        VBox detailsBox = new VBox();
+        detailsBox.getStyleClass().add("details-box");
+        final Label detailsHeader = new Label("Task: " + task.name());
+        detailsHeader.getStyleClass().add("details-box-header");
+        detailsBox.getChildren().add(detailsHeader);
+        Text description = new Text("Description: " + task.description());
+        description.getStyleClass().add("details-box-content");
+        detailsBox.getChildren().add(new TextFlow(description));
+        mainCanvas.getChildren().add(detailsBox);
         mainCanvas.getChildren().add(progressBar);
 
         // canvas for visual tasks to draw on
@@ -190,10 +199,6 @@ public class ThreadOffUI {
         return new TaskUiElements(progressBar, statsBox);
     }
 
-    public List<SelectableTask> getSelectableTasks() {
-        return selectableTasks;
-    }
-
     public Canvas getDrawableCanvas() {
         return drawableCanvas;
     }
@@ -204,14 +209,6 @@ public class ThreadOffUI {
 
     public IntegerField getNumThreadsInput() {
         return numThreadsInput;
-    }
-
-    public ToggleLabel getNoCalculationLabel() {
-        return noCalculationLabel;
-    }
-
-    public ToggleLabel getNumThreadsLabel() {
-        return numThreadsLabel;
     }
 
     public TaskComboBox getTaskSelection() {
