@@ -1,7 +1,7 @@
 ---
-layout: home
+layout: page
 title: "About ThreadOff"
-permalink: /about
+permalink: /
 ---
 ## What's this all about?
 
