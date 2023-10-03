@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "About ThreadOff"
-permalink: /
+order: 1
 ---
 ## What's this all about?
 
