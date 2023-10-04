@@ -9,7 +9,7 @@ ThreadOff is the result of a little fun project of mine. It's a UI you can use t
 ![thread of UI gif](/images/ThreadOff-title.gif)
 
 
-It allows you to run the same tasks with both types of threads and presents you with statistic about their execution. You can easily experiment with certain settings to get the best possible results:
+It allows you to run the same tasks with both types of threads and presents you with statistics about their execution. You can easily experiment with certain settings to get the best possible results:
 - number of executions (times the task is run)
 - thread type
 - size of the thread pool (for platform threads)
@@ -25,7 +25,7 @@ For these purposes, you can either download the ready-to-run jar, or check out t
  I started ThreadOff because I wanted to learn about the new *virtual threads* which were introduced by Project Loom, and at the same time try out some of the latest other features of Java, such as
 - record patterns
 - sealed types
-- algebraic data types
+- algebraic data types (learn more about those [here](https://www.infoq.com/articles/data-oriented-programming-java/))
 
 Combine that with learning more about concurrency in an unfamiliar scenario, i.e. something other than web server applications, and you get project ThreadOff.
 

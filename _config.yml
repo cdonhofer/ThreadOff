@@ -32,8 +32,8 @@ url: https://cdonhofer.github.io  # the base hostname and protocol for your site
 baseurl: /ThreadOff/      # place folder name if the site is served in a subfolder
 
 
-twitter_username: jekyllrb
-github_username:  jekyll
+twitter_username: cdonhofer
+github_username:  cdonhofer
 
 # Build settings
 theme: minima
