@@ -1,7 +1,8 @@
 ---
 layout: page
-title: "Get It"
+title: Get It
 permalink: /get-it
+order: 1
 ---
 ## Executable Jar
 

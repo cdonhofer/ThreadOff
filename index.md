@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "About ThreadOff"
-order: 1
+title: About ThreadOff
+order: 0
 ---
 ## What's this all about?
 ThreadOff is the result of a little fun project of mine. It's a UI you can use to compare the performance of virtual threads with that of platform threads on different types of tasks.
