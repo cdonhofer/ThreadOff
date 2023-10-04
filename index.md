@@ -6,6 +6,9 @@ order: 1
 ## What's this all about?
 ThreadOff is the result of a little fun project of mine. It's a UI you can use to compare the performance of virtual threads with that of platform threads on different types of tasks.
 
+![thread of UI gif](/images/ThreadOff-title.gif)
+
+
 It allows you to run the same tasks with both types of threads and presents you with statistic about their execution. You can easily experiment with certain settings to get the best possible results:
 - number of executions (times the task is run)
 - thread type
