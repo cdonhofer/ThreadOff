@@ -27,9 +27,14 @@ public final class YourTaskHandler extends ThreadOffCalc {
 	    // override this method to provide the initial set of tasks
 	    // this can be a list of all tasks (callables), or just a few
 	    // which will spawn other (see the Koch Flake tasks for an example of that)
+	    
         List<SleepCallable> initialTasks = new ArrayList<>(multiplicity);
         IntStream.range(0, multiplicity).forEach(it -> initialTasks.add(new SleepCallable()));
 
+		// the first param. is the number of total tasks (callables)
+		// including tasks added by other tasks
+		// in this example, tasks don't add others to the executor
+		// so it's the same as multiplicity
         return new InitialData(multiplicity, initialTasks);
     }
 
