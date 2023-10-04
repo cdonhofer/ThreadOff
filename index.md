@@ -21,6 +21,7 @@ There's a list of pre-defined tasks, but you can also easily extend it to [try o
 
 For these purposes, you can either download the ready-to-run jar, or check out the maven project: [get ThreadOff](get-it.md)
 
+
 ## Goals
  I started ThreadOff because I wanted to learn about the new *virtual threads* which were introduced by Project Loom, and at the same time try out some of the latest other features of Java, such as
 - record patterns
@@ -33,6 +34,7 @@ Thus, the main goals were to learn
 - how to use virtual threads
 - how existing code could be adapted to switch from platform threads to virtual threads
 - when virtual threads are the better option, and when they're not
+
 
 ## Conclusions / Learnings
 Virtual threads are the one-size-fits-all tool in Java when it comes to concurrency: 
