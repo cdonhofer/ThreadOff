@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-10-05T20:26:33.592Z" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0" etag="2HPJmfCZwmkaD_Zg-0-G" version="22.0.3" type="device">
+<mxfile host="app.diagrams.net" modified="2023-10-05T20:46:30.349Z" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0" etag="ayFmjeM7KMsX57CnB3QP" version="22.0.3" type="device">
   <diagram name="Page-1" id="13e1069c-82ec-6db2-03f1-153e76fe0fe0">
     <mxGraphModel dx="954" dy="772" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
@@ -45,12 +45,6 @@
         </mxCell>
         <mxCell id="7baba1c4bc27f4b0-28" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
           <mxGeometry x="870" y="160" width="10" height="440" as="geometry" />
-        </mxCell>
-        <mxCell id="7baba1c4bc27f4b0-14" value="increment" style="html=1;verticalAlign=bottom;endArrow=block;entryX=0.2;entryY=0.5;labelBackgroundColor=none;fontFamily=Verdana;fontSize=12;edgeStyle=elbowEdgeStyle;elbow=vertical;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="7baba1c4bc27f4b0-13" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="295" y="250" as="sourcePoint" />
-            <mxPoint x="435" y="250" as="targetPoint" />
-          </mxGeometry>
         </mxCell>
         <mxCell id="7baba1c4bc27f4b0-40" value="Simplified sequence: a time-slice out of the continuous result accumulation and UI update threads interaction" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="100" y="30" width="810" height="35" as="geometry" />
@@ -171,6 +165,19 @@
         <mxCell id="PAR7siRFz0wEC8x9-VPq-23" value="send draw commands" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="PAR7siRFz0wEC8x9-VPq-22">
           <mxGeometry x="-0.0186" y="2" relative="1" as="geometry">
             <mxPoint y="-7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PAR7siRFz0wEC8x9-VPq-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="7baba1c4bc27f4b0-10" target="7baba1c4bc27f4b0-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="250" />
+              <mxPoint x="320" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PAR7siRFz0wEC8x9-VPq-25" value="increment" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="PAR7siRFz0wEC8x9-VPq-24">
+          <mxGeometry x="0.0331" y="-1" relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
       </root>
