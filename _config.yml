@@ -59,3 +59,8 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+header_pages:
+  - index.md
+  - get-it.md
+  - try-out-your-own-tasks.md
