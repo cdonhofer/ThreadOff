@@ -30,10 +30,19 @@ For these purposes, you can either download the ready-to-run jar, or check out t
 
 Combine that with learning more about concurrency in an unfamiliar scenario, i.e. something other than web server applications, and you get project ThreadOff.
 
-Thus, the main goals were to learn
+**Thus, the main goals were to learn**
 - how to use virtual threads
 - how existing code could be adapted to switch from platform threads to virtual threads
 - when virtual threads are the better option, and when they're not
+
+**Design goals:**
+- implement a responsive interruption policy
+- avoid UI freezes, find a way to efficiently handle drawing large numbers of shapes from thousands of calculation threads in the single UI thread
+- ... and make sure rendering is still smooth
+- implement a solid handling of tasks and their results
+- support both visual and non-visual tasks
+
+Check out the high level design [here](design.md)
 
 
 ## Conclusions / Learnings

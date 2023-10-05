@@ -6,8 +6,7 @@ order: 2
 ---
 ## Check out the project
 
-....
-
+You can get it here: [https://github.com/cdonhofer/ThreadOff](https://github.com/cdonhofer/ThreadOff)
 
 ## Implement a task handler
 ```java
@@ -39,6 +38,9 @@ public final class YourTaskHandler extends ThreadOffCalc {
     }
 
 	// example for a very simple blocking task
+	// if you want your task to draw something on the canvas
+	// just make it return a Shape (javafx.scene.shape.Shape)
+	// e.g. a Line, Ellipse or a Text
     static class SleepCallable implements Callable<List<Shape>> {
         @Override
         public List<Shape> call() throws Exception {
@@ -48,3 +50,24 @@ public final class YourTaskHandler extends ThreadOffCalc {
     }
 }
 ```
+
+## Add it to the UI's ComboBox
+```java
+// in ThreadOffApplication, add it to selectableTasks:
+
+ List<SelectableTask> selectableTasks = List.of(
+            new RepeatableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
+                    (var numExec) -> new YourTaskHandler(completionService, numExec),
+                    () -> 800, // thread pool size
+                    100000),
+            //.....
+            );
+                    
+
+```
+
+You can add it as either *RepeatableTask* or *SingularTask*. For a repeatable task, the UI offers an input field for the number of calculations. This number is then passed to your task handler (in this case *YourTaskHandler*) and should represent the number of callables returned.
+
+For an example of a *RepeatableTask*, see *BlockingTask.java*. For a *SingularTask*, see *KochFlakeTask.java*.
+
+Alternatively, you can just modify one of the existing implementations to get going faster! 

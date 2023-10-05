@@ -62,5 +62,6 @@ plugins:
 
 header_pages:
   - index.md
+  - design.md
   - get-it.md
   - try-out-your-own-tasks.md
