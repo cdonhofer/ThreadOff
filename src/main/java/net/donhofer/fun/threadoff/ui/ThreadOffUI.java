@@ -163,12 +163,12 @@ public class ThreadOffUI {
         return bottomPanel;
     }
 
-    public TaskUiElements prepareUIForTaskRun(SelectableTask task, boolean useVThreads) {
+    public TaskUiElements prepareUIForTaskRun(SelectableTask task, boolean useVThreads, int poolSize) {
         mainCanvas.getChildren().clear();
         ProgressBar progressBar = new ProgressBar();
         progressBar.setProgress(0F);
         progressBar.getStyleClass().add("progress-bar");
-        StatsBox statsBox = new StatsBox(useVThreads, task.name());
+        StatsBox statsBox = new StatsBox(useVThreads, task.name(), poolSize);
 
         VBox detailsBox = new VBox();
         detailsBox.getStyleClass().add("details-box");

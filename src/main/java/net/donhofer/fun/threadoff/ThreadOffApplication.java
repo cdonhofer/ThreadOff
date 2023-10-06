@@ -115,10 +115,11 @@ public class ThreadOffApplication extends Application {
         stopCalculations();
 
         // prepare main canvas
-        final TaskUiElements uiElements = ui.prepareUIForTaskRun(selectedTask, useVThreads);
+        int poolSize = useVThreads ? 0 : Integer.parseInt(ui.getNumThreadsInput().getText());
+        final TaskUiElements uiElements = ui.prepareUIForTaskRun(selectedTask, useVThreads, poolSize);
 
         if (executorService == null || executorService.isShutdown()) {
-            executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(Integer.parseInt(ui.getNumThreadsInput().getText()));
+            executorService = useVThreads ? Executors.newVirtualThreadPerTaskExecutor() : Executors.newFixedThreadPool(poolSize);
         }
         completionService = new ExecutorCompletionService<>(executorService);
 
