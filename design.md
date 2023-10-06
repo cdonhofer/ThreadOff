@@ -21,10 +21,9 @@ With this in mind, a solution had to be found to achieve both competing goals, c
 The resulting execution flow was:
 - the main thread, triggered by the start button, initializes the executor and completion service
 - it also creates, using the task specific handler class, the (initial) tasks, which are then submitted to the executor
-- at the same time, two more threads were started
+- at the same time, three more threads are started
 	- a pickup task, which retrieves the finished tasks from the completion service and accumulates the results, i.e. the number of completed tasks and the shapes possibly produced by these tasks
-	- the "drawing task", which reads these accumulated results and issues the UI update commands via the UI thread
-	- TODO: mention that it's actually two tasks updating the UI and clarify diagram!
+	- two "drawing tasks", which read these accumulated results and issue the UI update commands via the UI thread (one for the stats, one for the canvas)
 
 ![thread of UI gif](/images/threadoff-result-handling.svg)
 
