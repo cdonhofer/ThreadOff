@@ -24,6 +24,7 @@ The resulting execution flow was:
 - at the same time, two more threads were started
 	- a pickup task, which retrieves the finished tasks from the completion service and accumulates the results, i.e. the number of completed tasks and the shapes possibly produced by these tasks
 	- the "drawing task", which reads these accumulated results and issues the UI update commands via the UI thread
+	- TODO: mention that it's actually two tasks updating the UI and clarify diagram!
 
 ![thread of UI gif](/images/threadoff-result-handling.svg)
 

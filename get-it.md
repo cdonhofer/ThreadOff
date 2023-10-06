@@ -6,37 +6,18 @@ order: 1
 ---
 ## Executable Jar
 
+You can download the latest executable jar here:
+[download ThreadOff.jar](https://github.com/cdonhofer/ThreadOff/blob/main/shade/ThreadOff.jar)
+
+Run it using [JDK 21](https://jdk.java.net/21/) or later:
+```
+java -jar ThreadOff.jar
+```
+
+
 ## Source / IntelliJ Project
 
-```java
-public class TestHarness {
-    public long timeTasks(int nThreads, final Runnable task)
-            throws InterruptedException {
-        final CountDownLatch startGate = new CountDownLatch(1);
-        final CountDownLatch endGate = new CountDownLatch(nThreads);
+The Maven project can be found here:
+[https://github.com/cdonhofer/ThreadOff/](https://github.com/cdonhofer/ThreadOff/)
 
-        for (int i = 0; i < nThreads; i++) {
-            Thread t = new Thread() {
-                public void run() {
-                    try {
-                        startGate.await();
-                        try {
-                            task.run();
-                        } finally {
-                            endGate.countDown();
-                        }
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            };
-            t.start();
-        }
-
-        long start = System.nanoTime();
-        startGate.countDown();
-        endGate.await();
-        long end = System.nanoTime();
-        return end - start;
-    }
-}
-```
+It includes all the required dependencies, so you won't have to install the JavaFX sdk or any other dependencies.

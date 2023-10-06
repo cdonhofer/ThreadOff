@@ -34,6 +34,7 @@ baseurl: /ThreadOff/      # place folder name if the site is served in a subfold
 
 twitter_username: cdonhofer
 github_username:  cdonhofer
+linkedin_profile: https://www.linkedin.com/in/christian-donhofer-527a59167/
 
 # Build settings
 theme: minima
