@@ -21,9 +21,9 @@
 title: ThreadOff
 email: christian [/a.t.]donhofer.net
 description: >- # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
+  Virtual threads vs platform threads: ThreadOff can help you analyse whether 
+  a certain task will work better with vThreads. It comes with a convenient UI,
+  just add your tasks and run them, or simply explore the existing ones.
 #baseurl: "" # the subpath of your site, e.g. /blog
 #url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
