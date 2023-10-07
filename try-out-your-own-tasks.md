@@ -6,7 +6,9 @@ order: 2
 ---
 ## Check out the project
 
-You can get it here: [https://github.com/cdonhofer/ThreadOff](https://github.com/cdonhofer/ThreadOff)
+You can get it here: 
+[https://github.com/cdonhofer/ThreadOff](https://github.com/cdonhofer/ThreadOff).
+
 It's a maven project and requires [JDK 21](https://jdk.java.net/21/) or later.
 
 ## Implement a task handler
