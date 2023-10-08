@@ -21,7 +21,7 @@ public final class BlockingTask extends ThreadOffCalc {
         List<SleepCallable> initialTasks = new ArrayList<>(multiplicity);
         IntStream.range(0, multiplicity).forEach(it -> initialTasks.add(new SleepCallable()));
 
-        return new InitialData(multiplicity, initialTasks);
+        return new InitialData(multiplicity, initialTasks, Collections.emptyList());
     }
 
     static class SleepCallable implements Callable<List<Shape>> {

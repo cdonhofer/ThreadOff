@@ -24,7 +24,7 @@ public final class SyncSemaphoreTask extends ThreadOffCalc {
         List<SyncCallable> initialTasks = new ArrayList<>(multiplicity);
         IntStream.range(0, multiplicity).forEach(it -> initialTasks.add(new SyncCallable()));
 
-        return new InitialData(multiplicity, initialTasks);
+        return new InitialData(multiplicity, initialTasks, Collections.emptyList());
     }
 
     class SyncCallable implements Callable<List<Shape>> {

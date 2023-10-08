@@ -25,7 +25,7 @@ public final class LockResourceTask extends ThreadOffCalc {
         List<LockCallable> initialTasks = new ArrayList<>(multiplicity);
         IntStream.range(0, multiplicity).forEach(it -> initialTasks.add(new LockCallable()));
 
-        return new InitialData(multiplicity, initialTasks);
+        return new InitialData(multiplicity, initialTasks, Collections.emptyList());
     }
 
     class LockCallable implements Callable<List<Shape>> {

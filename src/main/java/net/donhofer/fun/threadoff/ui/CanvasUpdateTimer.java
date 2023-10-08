@@ -2,7 +2,6 @@ package net.donhofer.fun.threadoff.ui;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.Shape;
 
 import java.util.Queue;
@@ -26,18 +25,14 @@ public class CanvasUpdateTimer extends AnimationTimer {
     @Override
     public void handle(long now) {
         int doneTasks = successfulTasks.get();
-        GraphicsContext gc = canvas.getGraphicsContext2D();
         for (int i = 0; i < shapesPerUpdate && !shapes.isEmpty(); i++) {
             Shape s = shapes.poll();
 
-            if (s instanceof ColoredLine line) {
-                gc.strokeLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
-            } else if (s != null) {
-                System.out.println("Warning: only drawing Lines has been implemented so far! " + s.getClass().getName());
-            }
+            ThreadOffUI.drawShape(s, canvas.getGraphicsContext2D());
         }
 
 
         if (doneTasks >= numTasks && shapes.isEmpty()) stop();
     }
+
 }

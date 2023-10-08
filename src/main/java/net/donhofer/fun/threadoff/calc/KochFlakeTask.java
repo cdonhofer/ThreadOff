@@ -5,6 +5,7 @@ import javafx.scene.shape.Shape;
 import net.donhofer.fun.threadoff.data.InitialData;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -84,7 +85,7 @@ public abstract sealed class KochFlakeTask extends ThreadOffCalc implements Grap
         ));
 
 
-        return new InitialData(expectedTasks, initialTasks);
+        return new InitialData(expectedTasks, initialTasks, Collections.emptyList());
     }
 
     public abstract int calculateNumTasks();

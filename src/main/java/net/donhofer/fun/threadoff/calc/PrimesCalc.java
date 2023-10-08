@@ -37,7 +37,7 @@ public final class PrimesCalc extends ThreadOffCalc {
         List<PrimeCallable> initialTasks = new ArrayList<>(multiplicity);
         IntStream.range(0, multiplicity).forEach(it -> initialTasks.add(new PrimeCallable()));
 
-        return new InitialData(multiplicity, initialTasks);
+        return new InitialData(multiplicity, initialTasks, Collections.emptyList());
     }
 
     static class PrimeCallable implements Callable<List<Shape>> {

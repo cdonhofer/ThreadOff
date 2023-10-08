@@ -3,8 +3,10 @@ package net.donhofer.fun.threadoff.ui;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import net.donhofer.fun.threadoff.data.SelectableTask;
@@ -86,6 +88,20 @@ public class ThreadOffUI {
         mainWindow.setTop(titleBar);
         mainWindow.setCenter(splitPane); // Set SplitPane to center
         mainWindow.setBottom(bottomPanel);
+    }
+
+    public static void drawShape(Shape shape, GraphicsContext gc) {
+        switch (shape) {
+            case ColoredLine l -> {
+                gc.setStroke(l.getStroke());
+                gc.strokeLine(l.getStartX(), l.getStartY(), l.getEndX(), l.getEndY());
+            }
+            case Triangle t -> {
+                gc.setFill(t.getStroke());
+                gc.fillPolygon(t.getXCoords(), t.getYCoords(), t.getYCoords().length);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + shape.getClass().getName());
+        }
     }
 
     private VBox buildBottomPanel() {
