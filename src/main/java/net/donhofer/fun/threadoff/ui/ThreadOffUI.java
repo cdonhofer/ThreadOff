@@ -6,6 +6,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -97,8 +98,12 @@ public class ThreadOffUI {
                 gc.strokeLine(l.getStartX(), l.getStartY(), l.getEndX(), l.getEndY());
             }
             case Triangle t -> {
-                gc.setFill(t.getStroke());
+                gc.setFill(t.getFill());
                 gc.fillPolygon(t.getXCoords(), t.getYCoords(), t.getYCoords().length);
+            }
+            case Rectangle r -> {
+                gc.setFill(r.getFill());
+                gc.fillRect(r.getX(), r.getY(), r.getWidth(), r.getHeight());
             }
             default -> throw new IllegalStateException("Unexpected value: " + shape.getClass().getName());
         }
@@ -198,7 +203,7 @@ public class ThreadOffUI {
         mainCanvas.getChildren().add(progressBar);
 
         // canvas for visual tasks to draw on
-        drawableCanvas = new Canvas(mainCanvas.getWidth() * 0.8, mainCanvas.getHeight() * 0.8);
+        drawableCanvas = new Canvas(mainCanvas.getWidth(), mainCanvas.getHeight() * 0.8);
         drawableCanvas.getGraphicsContext2D().setStroke(UIConfig.strokeColor);
         drawableCanvas.getGraphicsContext2D().setFill(UIConfig.backgroundColor);
 

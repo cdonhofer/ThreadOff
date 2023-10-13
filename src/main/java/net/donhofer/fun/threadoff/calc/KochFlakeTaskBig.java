@@ -78,26 +78,15 @@ public final class KochFlakeTaskBig extends KochFlakeTask {
             return results;
         }
         private List<LineCoords> splitLine(double x1, double y1, double x2, double y2) {
-
-            double deltaX = x2 - x1;
-            double deltaY = y2 - y1;
-
-            double x3 = x1 + deltaX / 3;
-            double y3 = y1 + deltaY / 3;
-
-            double x4 = (0.5 * (x1+ x2) + Math.sqrt(3) * (y1- y2)/6);
-            double y4 = (0.5 * (y1+ y2) + Math.sqrt(3) * (x2 -x1)/6);
-
-            double x5 = x1 + 2 * deltaX / 3;
-            double y5 = y1 + 2 * deltaY / 3;
+            TriangleCoords triangle = CommonCalculations.splitLineKoch(x1, y1, x2, y2);
 
             // todo: this could be optimized: only draw over the segment that'll be removed,
             //  then just return the two new lines
             return List.of(
-                    new LineCoords(x1, y1, x3, y3),
-                    new LineCoords(x3, y3, x4, y4),
-                    new LineCoords(x4, y4, x5, y5),
-                    new LineCoords(x5, y5, x2, y2)
+                    new LineCoords(x1, y1, triangle.x1(), triangle.y1()),
+                    new LineCoords(triangle.x1(), triangle.y1(), triangle.x2(), triangle.y2()),
+                    new LineCoords(triangle.x2(), triangle.y2(), triangle.x3(), triangle.y3()),
+                    new LineCoords(triangle.x3(), triangle.y3(), x2, y2)
 
             );
         }

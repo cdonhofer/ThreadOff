@@ -49,6 +49,12 @@ public class ThreadOffApplication extends Application {
             new SingularTask("Sierpinski Triangle", "Calculates a Sierpinski triangle of grade 10, which is then displayed",
                     (var numExec) -> new SierpinskiTask(completionService, UIConfig.defaultCanvasWidth, UIConfig.defaultCanvasHeight),
                     ThreadOffCalc::getThreadPoolSize),
+            new SingularTask("Koch flake filled with Sierpinski triangles", "Calculates a Koch flake filled with Sierpinski triangles, which is then displayed",
+                    (var numExec) -> new KochSierpinskiTask(completionService, UIConfig.defaultCanvasWidth, UIConfig.defaultCanvasHeight),
+                    ThreadOffCalc::getThreadPoolSize),
+            new SingularTask("Sierpinski triangle with Koch extensions", "Calculates a Sierpinski triangle with Koch flake extensions, which is then displayed",
+                    (var numExec) -> new SierpinskiKochTask(completionService, UIConfig.defaultCanvasWidth, UIConfig.defaultCanvasHeight),
+                    ThreadOffCalc::getThreadPoolSize),
             new RepeatableTask("Blocking sleep in synchronized method", "Blocks using Thread.sleep(10) in a synchronized method",
                     (var numExec) -> new SyncResourceTask(completionService, numExec),
                     () -> ThreadOffCalc.getThreadPoolSize() * 10, // thread pool size

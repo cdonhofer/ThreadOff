@@ -15,7 +15,7 @@ public class Triangle extends Polygon {
         super();
         xCoords = new double[] {x1, x2, x3};
         yCoords = new double[] {y1, y2, y3};
-        setStroke(color);
+        setFill(color);
     }
 
     public double[] getYCoords() {

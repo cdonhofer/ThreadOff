@@ -50,37 +50,24 @@ public abstract sealed class KochFlakeTask extends ThreadOffCalc implements Grap
 
         // calculations for initial lines
         // Calculate margin and side length to center the snowflake in the canvas
-        double margin = Math.min(canvasWidth, canvasHeight) * 0.1;
-        double sideLength = Math.min(canvasWidth, canvasHeight) - 2 * margin;
-
-        // height of the triangle
-        double height = Math.sqrt(3) * sideLength / 2;
-
-        // Calculate the center point of the canvas
-        double cx = canvasWidth / 2;
-        double cy = canvasHeight / 2;
-
-        // Calculate the three vertices of the triangle
-        double x1 = cx, y1 = cy - 2 * height / 3;  // Top vertex
-        double x2 = cx - sideLength / 2, y2 = cy + height / 3; // Bottom-left vertex
-        double x3 = cx + sideLength / 2, y3 = cy + height / 3; // Bottom-right vertex
+        final TriangleCoords triangle = CommonCalculations.getKochTriangleCoords(canvasWidth, canvasHeight);
 
         final int expectedTasks = calculateNumTasks();
 
         List<Callable<List<Shape>>> initialTasks = new ArrayList<>(3);
         initialTasks.add(getCallable(
-                x1, y1,
-                x2, y2,
+                triangle.x1(), triangle.y1(),
+                triangle.x2(), triangle.y2(),
                 strokeColor, multiplicity
         ));
         initialTasks.add(getCallable(
-                x2, y2,
-                x3, y3,
+                triangle.x2(), triangle.y2(),
+                triangle.x3(), triangle.y3(),
                 strokeColor, multiplicity
         ));
         initialTasks.add(getCallable(
-                x3, y3,
-                x1, y1,
+                triangle.x3(), triangle.y3(),
+                triangle.x1(), triangle.y1(),
                 strokeColor, multiplicity
         ));
 

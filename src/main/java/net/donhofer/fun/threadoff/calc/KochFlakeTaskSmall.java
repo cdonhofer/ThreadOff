@@ -46,18 +46,7 @@ public final class KochFlakeTaskSmall extends KochFlakeTask {
             return splitLine();
         }
         protected List<Shape> splitLine() {
-
-            double deltaX = x2 - x1;
-            double deltaY = y2 - y1;
-
-            double x3 = x1 + deltaX / 3;
-            double y3 = y1 + deltaY / 3;
-
-            double x4 = (0.5 * (x1+ x2) + Math.sqrt(3) * (y1- y2)/6);
-            double y4 = (0.5 * (y1+ y2) + Math.sqrt(3) * (x2 -x1)/6);
-
-            double x5 = x1 + 2 * deltaX / 3;
-            double y5 = y1 + 2 * deltaY / 3;
+            TriangleCoords triangle = CommonCalculations.splitLineKoch(x1, y1, x2, y2);
 
             // todo: this could be optimized: only draw over the segment that'll be removed,
             //  then just return the two new lines
@@ -65,24 +54,24 @@ public final class KochFlakeTaskSmall extends KochFlakeTask {
             // add subsequent tasks
             if (currentLevel > 0 && !Thread.currentThread().isInterrupted()) {
                 completionService.submit(new SmallKochCallable(
-                        x1, y1, x3, y3, color, currentLevel - 1
+                        x1, y1, triangle.x1(), triangle.y1(), color, currentLevel - 1
                 ));
                 completionService.submit(new SmallKochCallable(
-                        x3, y3, x4, y4, color, currentLevel - 1
+                        triangle.x1(), triangle.y1(), triangle.x2(), triangle.y2(), color, currentLevel - 1
                 ));
                 completionService.submit(new SmallKochCallable(
-                        x4, y4, x5, y5, color, currentLevel - 1
+                        triangle.x2(), triangle.y2(), triangle.x3(), triangle.y3(), color, currentLevel - 1
                 ));
                 completionService.submit(new SmallKochCallable(
-                        x5, y5, x2, y2, color, currentLevel - 1
+                        triangle.x3(), triangle.y3(), x2, y2, color, currentLevel - 1
                 ));
             } else {
                 // add lines only when final stage has been reached
                 var paths = List.of(
-                        new ColoredLine(x1, y1, x3, y3, color),
-                        new ColoredLine(x3, y3, x4, y4, color),
-                        new ColoredLine(x4, y4, x5, y5, color),
-                        new ColoredLine(x5, y5, x2, y2, color)
+                        new ColoredLine(x1, y1, triangle.x1(), triangle.y1(), color),
+                        new ColoredLine(triangle.x1(), triangle.y1(), triangle.x2(), triangle.y2(), color),
+                        new ColoredLine(triangle.x2(), triangle.y2(), triangle.x3(), triangle.y3(), color),
+                        new ColoredLine(triangle.x3(), triangle.y3(), x2, y2, color)
 
                 );
                 shapes.addAll(paths);
@@ -90,5 +79,6 @@ public final class KochFlakeTaskSmall extends KochFlakeTask {
 
             return shapes;
         }
+
     }
 }

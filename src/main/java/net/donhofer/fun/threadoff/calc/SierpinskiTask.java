@@ -38,32 +38,19 @@ public final class SierpinskiTask extends ThreadOffCalc implements GraphicalTask
 
         // calculations for initial triangle
         // Calculate margin and side length to center the snowflake in the canvas
-        double margin = Math.min(canvasWidth, canvasHeight) * 0.1;
-        double sideLength = Math.min(canvasWidth, canvasHeight) - 2 * margin;
-
-        // height of the triangle
-        double height = Math.sqrt(3) * sideLength / 2;
-
-        // Calculate the center point of the canvas
-        double cx = canvasWidth / 2;
-        double cy = canvasHeight / 2;
-
-        // Calculate the three vertices of the triangle
-        double x1 = cx, y1 = cy - 2 * height / 3;  // Top vertex
-        double x2 = cx - sideLength / 2, y2 = cy + height / 3; // Bottom-left vertex
-        double x3 = cx + sideLength / 2, y3 = cy + height / 3; // Bottom-right vertex
+        final TriangleCoords triangle = CommonCalculations.getKochTriangleCoords(canvasWidth, canvasHeight);
 
         final int expectedTasks = calculateNumTasks();
 
         List<Callable<List<Shape>>> initialTasks = new ArrayList<>(3);
         initialTasks.add(getCallable(
-                new TriangleCoords(x1, y1, x2, y2, x3, y3),
+                new TriangleCoords(triangle.x1(), triangle.y1(), triangle.x2(), triangle.y2(), triangle.x3(), triangle.y3()),
                 grade
         ));
         Triangle baseTriangle = new Triangle(
-                x1, y1,
-                x2, y2,
-                x3, y3,
+                triangle.x1(), triangle.y1(),
+                triangle.x2(), triangle.y2(),
+                triangle.x3(), triangle.y3(),
                 bgColor
         );
         return new InitialData(expectedTasks, initialTasks, List.of(baseTriangle));
@@ -134,8 +121,6 @@ public final class SierpinskiTask extends ThreadOffCalc implements GraphicalTask
             );
             shapes.add(cutOutTriangle);
 
-//            System.out.println("shapes size: "+shapes.size());
-
             return shapes;
         }
     }
@@ -149,6 +134,5 @@ public final class SierpinskiTask extends ThreadOffCalc implements GraphicalTask
         return new Point(x3, y3);
     }
 
-    record TriangleCoords(double x1, double y1, double x2, double y2, double x3, double y3){}
     record Point(double x, double y) {}
 }
