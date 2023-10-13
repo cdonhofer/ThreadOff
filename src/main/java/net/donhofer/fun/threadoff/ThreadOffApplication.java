@@ -171,7 +171,7 @@ public class ThreadOffApplication extends Application {
     }
 
 
-    private Void collectFinishedTasks(CompletionService<List<Shape>> completionService, int numTasks) {
+    private Void collectFinishedTasks(CompletionService<List<Shape>> completionService, long numTasks) {
 
         while(!Thread.currentThread().isInterrupted()) {
             // prefer non-blocking poll for responsiveness(to interruption)

@@ -27,13 +27,34 @@ public final class KochSierpinskiTask extends ThreadOffCalc implements Graphical
     private static final int grade = 8;
 
     public KochSierpinskiTask(CompletionService<List<Shape>> completionService, double canvasWidth, double canvasHeight) {
-        super(completionService, grade);
+        super(completionService, 1);
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
     }
 
-    public int calculateNumTasks() {
-        return (int) (Math.pow(4, multiplicity+1)-1)* 6;
+    public long calculateNumTasks() {
+        long kochTasks = getKochTasks(grade);
+        long sierpinskiTasks = 0;
+        for (long i = 0; i <= grade; i++) {
+            long factor = i == 0 ? 1 : getKochSides(i-1);
+            long spTasks = calculateTasksForSierpinski(grade-i);
+            System.out.println("factor "+factor+" for grade "+i + " tasks: "+ spTasks);
+            sierpinskiTasks += factor * spTasks;
+        }
+        System.out.println("total "+kochTasks + sierpinskiTasks);
+        return kochTasks + sierpinskiTasks;
+    }
+
+    private static long getKochSides(long triangleGrade) {
+        return (long) Math.pow(4, triangleGrade) * 3;
+    }
+
+    private static long getKochTasks(long triangleGrade) {
+        return (long) (Math.pow(4, triangleGrade + 1) - 1);
+    }
+
+    public long calculateTasksForSierpinski(long triangleGrade){
+        return (long) (Math.pow(3, triangleGrade + 1) - 1)/2;
     }
 
 
@@ -44,29 +65,29 @@ public final class KochSierpinskiTask extends ThreadOffCalc implements Graphical
         // Calculate margin and side length to center the snowflake in the canvas
         final TriangleCoords triangle = CommonCalculations.getKochTriangleCoords(canvasWidth, canvasHeight);
 
-        final int expectedTasks = calculateNumTasks();
+        final long expectedTasks = calculateNumTasks();
 
         List<Callable<List<Shape>>> initialTasks = new ArrayList<>(3);
         initialTasks.add(new SmallKochCallable(
                 triangle.x1(), triangle.y1(),
                 triangle.x2(), triangle.y2(),
-                strokeColor, multiplicity
+                strokeColor, grade
         ));
         initialTasks.add(new SmallKochCallable(
                 triangle.x2(), triangle.y2(),
                 triangle.x3(), triangle.y3(),
-                strokeColor, multiplicity
+                strokeColor, grade
         ));
         initialTasks.add(new SmallKochCallable(
                 triangle.x3(), triangle.y3(),
                 triangle.x1(), triangle.y1(),
-                strokeColor, multiplicity
+                strokeColor, grade
         ));
 
         // initial sierpinski
         initialTasks.add(new SierpinskiCallable(
                 new TriangleCoords(triangle.x1(), triangle.y1(), triangle.x2(), triangle.y2(), triangle.x3(), triangle.y3()),
-                multiplicity
+                grade
         ));
 
 

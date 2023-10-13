@@ -8,13 +8,13 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CanvasUpdateTimer extends AnimationTimer {
-    private final int numTasks;
+    private final long numTasks;
     private final Canvas canvas;
     private final int shapesPerUpdate = 5000;
     private final Queue<Shape> shapes;
     private final AtomicInteger successfulTasks;
 
-    public CanvasUpdateTimer(Canvas canvas, int numTasks, Queue<Shape> shapes, AtomicInteger successfulTasks) {
+    public CanvasUpdateTimer(Canvas canvas, long numTasks, Queue<Shape> shapes, AtomicInteger successfulTasks) {
         super();
         this.numTasks = numTasks;
         this.canvas = canvas;

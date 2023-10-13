@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UiUpdateTimer extends AnimationTimer {
     private final ProgressBar progressBar;
     private final StatsBox statsBox;
-    private final int numTasks;
+    private final long numTasks;
     private final AtomicInteger successfulTasks;
     private final AtomicLong elapsedTime;
 
-    public UiUpdateTimer(TaskUiElements uiElements, int numTasks, AtomicInteger successfulTasks, AtomicLong elapsedTime) {
+    public UiUpdateTimer(TaskUiElements uiElements, long numTasks, AtomicInteger successfulTasks, AtomicLong elapsedTime) {
         super();
         this.numTasks = numTasks;
         this.progressBar = uiElements.progressBar();
