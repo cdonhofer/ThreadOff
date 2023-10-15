@@ -53,6 +53,7 @@ public final class YourTaskHandler extends ThreadOffCalc {
     }
 }
 ```
+In case you want to add a task returning Shapes to be drawn on the Canvas, make sure your task handler implements the GraphicalTask interface.
 
 ## Add it to the UI's ComboBox
 ```java

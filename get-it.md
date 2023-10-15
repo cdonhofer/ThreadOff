@@ -15,9 +15,9 @@ java -jar ThreadOff.jar
 ```
 
 
-## Source / IntelliJ Project
+## Source / Maven Project
 
 The Maven project can be found here:
 [https://github.com/cdonhofer/ThreadOff/](https://github.com/cdonhofer/ThreadOff/)
 
-It includes all the required dependencies, so you won't have to install the JavaFX sdk or any other dependencies.
+It includes all the required dependencies, so you won't have to install the JavaFX sdk or anything else.

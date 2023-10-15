@@ -1,6 +1,6 @@
 ---
 layout: page
-title: App Design
+title: Design
 order: 3
 ---
 ## High level design
@@ -16,7 +16,7 @@ The latter one was the most important and also the one the required the most tho
 
 
 ## Decoupling processing and UI updates
-With this in mind, a solution had to be found to achieve both competing goals, correctly measuring the performance of task execution and continuously updating the UI, without falling prey to this bottleneck. The way to achieve this was to use a completion service.
+With this in mind, a solution had to be found to achieve both competing goals, correctly measuring the performance of task execution and continuously updating the UI, without falling prey to this bottleneck. One central element to achieve this was to use a completion service.
 
 The resulting execution flow was:
 - the main thread, triggered by the start button, initializes the executor and completion service

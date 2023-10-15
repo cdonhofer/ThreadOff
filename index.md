@@ -34,6 +34,9 @@ Combine that with learning more about concurrency in an unfamiliar scenario, i.e
 - how to use virtual threads
 - how existing code could be adapted to switch from platform threads to virtual threads
 - when virtual threads are the better option, and when they're not
+Side task:
+- Fun with ~~Flags~~ Fractals! ;)
+	- try to parallelize some fractal calculations
 
 **Design goals:**
 - implement a responsive interruption policy
@@ -59,6 +62,7 @@ Platform Threads, apart from the "many-blocking-tasks" scenario, can still be tu
 - you have to carefully think about what size your tasks should be
 - which size the thread pool should be
 - what type of pool to use
+- adapt these settings as your requirements change
 - etc.
 
 So, although there's still a lot to explore, my impression is that both types of threads are here to stay. While virtual threads perfectly fulfill their main intentions ([see JEP 425](https://openjdk.org/jeps/425)), they also serve as a way of simplifying concurrency in most situations.
