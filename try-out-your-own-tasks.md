@@ -60,7 +60,7 @@ In case you want to add a task returning Shapes to be drawn on the Canvas, make 
 // in ThreadOffApplication, add it to selectableTasks:
 
  List<SelectableTask> selectableTasks = List.of(
-            new RepeatableTask("Blocking sleep", "Simply blocks using Thread.sleep(10)",
+            new RepeatableTask("My awesome task", "does cool stuff",
                     (var numExec) -> new YourTaskHandler(completionService, numExec),
                     () -> 800, // thread pool size
                     100000),
