@@ -34,6 +34,7 @@ Combine that with learning more about concurrency in an unfamiliar scenario, i.e
 - how to use virtual threads
 - how existing code could be adapted to switch from platform threads to virtual threads
 - when virtual threads are the better option, and when they're not
+
 Side task:
 - Fun with ~~Flags~~ Fractals! ;)
 	- try to parallelize some fractal calculations
