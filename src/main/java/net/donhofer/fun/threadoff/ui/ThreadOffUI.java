@@ -47,11 +47,16 @@ public class ThreadOffUI {
         mainWindow.prefWidthProperty().bind(rootPane.widthProperty());
         mainWindow.prefHeightProperty().bind(rootPane.heightProperty());
 
+        // TODO fix canvas and main area size when resizing the window
         ScrollPane container = new ScrollPane();
         mainCanvas = new VBox(5);
         container.setContent(mainCanvas);
         container.setFitToWidth(true);
         container.setFitToHeight(true);
+        container.prefWidthProperty().bind(mainWindow.widthProperty());
+        container.prefHeightProperty().bind(mainWindow.heightProperty());
+        mainCanvas.prefWidthProperty().bind(container.widthProperty());
+        mainCanvas.prefHeightProperty().bind(container.heightProperty());
 
         ScrollPane sideBar = new ScrollPane();
         sideBar.setFitToWidth(true);
