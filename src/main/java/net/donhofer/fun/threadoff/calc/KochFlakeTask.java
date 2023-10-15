@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 
-public abstract sealed class KochFlakeTask extends ThreadOffCalc implements GraphicalTask permits KochFlakeTaskBig, KochFlakeTaskSmall {
+public abstract class KochFlakeTask extends ThreadOffCalc implements GraphicalTask {
     private Color strokeColor;
     double canvasWidth, canvasHeight;
 

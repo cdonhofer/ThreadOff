@@ -6,7 +6,7 @@ import net.donhofer.fun.threadoff.data.InitialData;
 import java.util.List;
 import java.util.concurrent.CompletionService;
 
-public sealed abstract class ThreadOffCalc permits BlockingTask, KochFlakeTask, KochSierpinskiTask, LockResourceTask, PrimesCalc, SierpinskiKochTask, SierpinskiTask, SyncResourceTask, SyncSemaphoreTask {
+public abstract class ThreadOffCalc {
     protected final CompletionService<List<Shape>> completionService;
     protected final int multiplicity;
 
