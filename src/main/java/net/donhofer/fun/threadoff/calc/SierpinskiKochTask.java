@@ -26,7 +26,7 @@ public final class SierpinskiKochTask extends ThreadOffCalc implements Graphical
 
     public SierpinskiKochTask(CompletionService<List<Shape>> completionService, double canvasWidth, double canvasHeight) {
         // fixed multiplicity for this task
-        super(completionService, 7);
+        super(completionService, 1);
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
     }
@@ -45,7 +45,7 @@ public final class SierpinskiKochTask extends ThreadOffCalc implements Graphical
         // Calculate margin and side length to center the snowflake in the canvas
         TriangleCoords triangle = CommonCalculations.getKochTriangleCoords(canvasWidth, canvasHeight);
 
-        final int expectedTasks = calculateNumTasks();
+        final long expectedTasks = calculateNumTasks();
 
         List<Callable<List<Shape>>> initialTasks = new ArrayList<>(3);
         initialTasks.add(getCallable(
@@ -59,9 +59,9 @@ public final class SierpinskiKochTask extends ThreadOffCalc implements Graphical
         return new InitialData(expectedTasks, initialTasks, List.of(bg));
     }
 
-    public int calculateNumTasks(){
-        // todo fix this, didn't think it through
-        return (int) (Math.pow(7, grade+1) - 1);
+    public long calculateNumTasks(){
+        // todo provide calculation
+        return 1001209;
     }
 
     private Callable<List<Shape>> getCallable(TriangleCoords triangle, int currentLevel) {
@@ -93,7 +93,6 @@ public final class SierpinskiKochTask extends ThreadOffCalc implements Graphical
          * @return shape for the cut-out triangle in the center of the initial triangle
          */
         private List<Shape> splitAndGrowTriangle(TriangleCoords triangle) {
-
             Point p1 = new Point(triangle.x1(), triangle.y1());
             Point p2 = new Point(triangle.x2(), triangle.y2());
             Point p3 = new Point(triangle.x3(), triangle.y3());
@@ -128,9 +127,6 @@ public final class SierpinskiKochTask extends ThreadOffCalc implements Graphical
                     TriangleCoords triangle2 = CommonCalculations.splitLineKoch(p2.x(), p2.y(), p3.x(), p3.y());
                     TriangleCoords triangle3 = CommonCalculations.splitLineKoch(p3.x(), p3.y(), p1.x(), p1.y());
 
-                    // TODO add further tasks, so the triangles will grow also on the first and fourth line segment
-                    // produced by the Koch split; this might have to be it's own recursive mechanism!?
-                    // smaller triangles on the remaining line segments
                     TriangleCoords triangle4 = CommonCalculations.splitLineKoch(p1.x(), p1.y(), triangle1.x1(), triangle1.y1());
                     TriangleCoords triangle5 = CommonCalculations.splitLineKoch(triangle1.x3(), triangle1.y3(), p2.x(), p2.y());
 
@@ -160,18 +156,6 @@ public final class SierpinskiKochTask extends ThreadOffCalc implements Graphical
             }
 
             List<Shape> shapes  = new ArrayList<>();
-            // draw initial bg color triangle
-//            // TODO this is not reliable, I guess, due to the sort-order - that's the reason I introduced the initial shapes in InitialData
-//            if (grow) {
-//                Triangle bgTriangle = new Triangle(
-//                        p1.x(), p1.y(),
-//                        p2.x(), p2.y(),
-//                        p3.x(), p3.y(),
-//                        bgColor
-//                );
-//                shapes.add(bgTriangle);
-//            }
-
             // add cut out triangle
             Triangle cutOutTriangle = new Triangle(
                     p4.x(), p4.y(),

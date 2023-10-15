@@ -38,10 +38,8 @@ public final class KochSierpinskiTask extends ThreadOffCalc implements Graphical
         for (long i = 0; i <= grade; i++) {
             long factor = i == 0 ? 1 : getKochSides(i-1);
             long spTasks = calculateTasksForSierpinski(grade-i);
-            System.out.println("factor "+factor+" for grade "+i + " tasks: "+ spTasks);
             sierpinskiTasks += factor * spTasks;
         }
-        System.out.println("total "+kochTasks + sierpinskiTasks);
         return kochTasks + sierpinskiTasks;
     }
 
